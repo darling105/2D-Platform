@@ -150,6 +150,26 @@ namespace Platformer2D.Core.Architecture
         }
     }
 
+    public readonly struct PlayerRespawnedEvent : IEvent
+    {
+        public readonly Vector3 RespawnPosition;
+
+        public PlayerRespawnedEvent(Vector3 respawnPosition)
+        {
+            RespawnPosition = respawnPosition;
+        }
+    }
+
+    public readonly struct CheckpointActivatedEvent : IEvent
+    {
+        public readonly Vector3 CheckpointPosition;
+
+        public CheckpointActivatedEvent(Vector3 checkpointPosition)
+        {
+            CheckpointPosition = checkpointPosition;
+        }
+    }
+
     #endregion
 
     #region Score Events

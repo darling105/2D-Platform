@@ -19,6 +19,7 @@ namespace Platformer2D.EditorTools
                 textureImporter.textureType = TextureImporterType.Sprite;
                 textureImporter.filterMode = FilterMode.Point;
                 textureImporter.textureCompression = TextureImporterCompression.Uncompressed;
+                textureImporter.spritePixelsPerUnit = 32f;
             }
         }
 
@@ -87,12 +88,21 @@ namespace Platformer2D.EditorTools
             EditorUtility.DisplayDialog("Thành công!", $"Đã xử lý xong toàn bộ {total} ảnh thành chuẩn Pixel Art sắc nét!", "Tuyệt vời");
         }
 
-        // 3. Đồng bộ Pixels Per Unit (PPU) = 32 cho toàn bộ sprite Player
-        [MenuItem("Tools/Pixel Art/Đồng bộ PPU = 32 cho toàn bộ Sprites Player")]
-        public static void SyncPlayerPPU()
+        // 3. Đồng bộ Pixels Per Unit (PPU) = 32 cho TOÀN BỘ Game (Quái, Boss, Tileset, Player)
+        [MenuItem("Tools/Pixel Art/Đồng bộ PPU = 32 cho TOÀN BỘ Game (Quái, Boss, Tileset, Player)")]
+        public static void SyncAllPPU()
         {
-            string[] guids = AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/GameAssets/Player" });
+            string[] guids = AssetDatabase.FindAssets("t:Texture2D", new[] { "Assets/GameAssets" });
             int total = guids.Length;
+
+            bool confirmed = EditorUtility.DisplayDialog(
+                "Xác nhận",
+                $"Tìm thấy {total} file ảnh trong Assets/GameAssets.\n\nBạn có muốn tự động đồng bộ toàn bộ về:\n- Pixels Per Unit: 32 (chuẩn kích thước ô lưới)\nkhông?",
+                "Đồng ý thực hiện",
+                "Hủy"
+            );
+
+            if (!confirmed) return;
 
             try
             {
@@ -100,6 +110,8 @@ namespace Platformer2D.EditorTools
                 for (int i = 0; i < total; i++)
                 {
                     string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                    EditorUtility.DisplayProgressBar("Đang đồng bộ PPU = 32...", $"[{i + 1}/{total}] {Path.GetFileName(path)}", (float)i / total);
+
                     TextureImporter importer = AssetImporter.GetAtPath(path) as TextureImporter;
                     if (importer != null && importer.spritePixelsPerUnit != 32f)
                     {
@@ -111,11 +123,12 @@ namespace Platformer2D.EditorTools
             finally
             {
                 AssetDatabase.StopAssetEditing();
+                EditorUtility.ClearProgressBar();
             }
 
             AssetDatabase.Refresh();
-            EditorUtility.DisplayDialog("Thành công!", $"Đã đồng bộ PPU = 32 cho {total} ảnh trong thư mục Player! Kích thước nhân vật bây giờ sẽ to chuẩn khít ô lưới.", "OK");
-            Debug.Log("<color=green>[PixelArtTool] Đã đồng bộ PPU = 32 cho toàn bộ Player Sprites!</color>");
+            EditorUtility.DisplayDialog("Thành công!", $"Đã đồng bộ PPU = 32 cho toàn bộ {total} ảnh (Quái vật, Boss, Tileset, Player)! Kích thước các đối tượng bây giờ sẽ to rõ ràng, cân đối tuyệt đối với Player.", "Tuyệt vời");
+            Debug.Log("<color=green>[PixelArtTool] Đã đồng bộ PPU = 32 cho toàn bộ Assets!</color>");
         }
     }
 }
