@@ -32,6 +32,10 @@ namespace Platformer2D.Managers
         [Header("SFX Channels")]
         [SerializeField] private int _sfxChannelCount = 10;
 
+        private const string PrefMasterVolume = "Audio_MasterVolume";
+        private const string PrefMusicVolume = "Audio_MusicVolume";
+        private const string PrefSfxVolume = "Audio_SfxVolume";
+
         private AudioSource _musicSource;
         private readonly List<AudioSource> _sfxSources = new List<AudioSource>();
         private readonly Dictionary<string, SoundItem> _soundDict = new Dictionary<string, SoundItem>();
@@ -42,6 +46,7 @@ namespace Platformer2D.Managers
             set
             {
                 _masterVolume = Mathf.Clamp01(value);
+                PlayerPrefs.SetFloat(PrefMasterVolume, _masterVolume);
                 UpdateVolumes();
             }
         }
@@ -52,6 +57,7 @@ namespace Platformer2D.Managers
             set
             {
                 _musicVolume = Mathf.Clamp01(value);
+                PlayerPrefs.SetFloat(PrefMusicVolume, _musicVolume);
                 UpdateVolumes();
             }
         }
@@ -62,6 +68,7 @@ namespace Platformer2D.Managers
             set
             {
                 _sfxVolume = Mathf.Clamp01(value);
+                PlayerPrefs.SetFloat(PrefSfxVolume, _sfxVolume);
                 UpdateVolumes();
             }
         }
@@ -69,18 +76,34 @@ namespace Platformer2D.Managers
         protected override void Awake()
         {
             base.Awake();
+            if (IsDuplicateInstance) return;
+
+            LoadVolumeSettings();
             InitializeAudioSources();
             IndexSoundLibrary();
         }
 
         private void OnEnable()
         {
+            if (IsDuplicateInstance) return;
             EventBus.Subscribe<PlaySoundEvent>(OnPlaySoundEvent);
         }
 
         private void OnDisable()
         {
             EventBus.Unsubscribe<PlaySoundEvent>(OnPlaySoundEvent);
+        }
+
+        private void LoadVolumeSettings()
+        {
+            _masterVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(PrefMasterVolume, _masterVolume));
+            _musicVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(PrefMusicVolume, _musicVolume));
+            _sfxVolume = Mathf.Clamp01(PlayerPrefs.GetFloat(PrefSfxVolume, _sfxVolume));
+        }
+
+        public void SaveSettings()
+        {
+            PlayerPrefs.Save();
         }
 
         private void InitializeAudioSources()

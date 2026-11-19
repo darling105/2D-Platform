@@ -15,10 +15,22 @@ namespace Platformer2D.Environment.Platforms
         [SerializeField] private float _dropThroughDuration = 0.35f;
 
         private Collider2D _platformCollider;
+        private Coroutine _dropCoroutine;
 
         private void Awake()
         {
             _platformCollider = GetComponent<Collider2D>();
+            if (_platformCollider != null)
+            {
+                _platformCollider.usedByEffector = true;
+            }
+
+            if (!TryGetComponent<PlatformEffector2D>(out var effector))
+            {
+                effector = gameObject.AddComponent<PlatformEffector2D>();
+                effector.useOneWay = true;
+                effector.surfaceArc = 170f;
+            }
         }
 
         /// <summary>
@@ -29,7 +41,11 @@ namespace Platformer2D.Environment.Platforms
         {
             if (playerCollider != null && _platformCollider != null)
             {
-                StartCoroutine(DropThroughRoutine(playerCollider));
+                if (_dropCoroutine != null)
+                {
+                    StopCoroutine(_dropCoroutine);
+                }
+                _dropCoroutine = StartCoroutine(DropThroughRoutine(playerCollider));
             }
         }
 
@@ -42,6 +58,7 @@ namespace Platformer2D.Environment.Platforms
             {
                 Physics2D.IgnoreCollision(_platformCollider, playerCollider, false);
             }
+            _dropCoroutine = null;
         }
     }
 }

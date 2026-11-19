@@ -31,6 +31,7 @@ namespace Platformer2D.Core.ObjectPool
         protected override void Awake()
         {
             base.Awake();
+            if (IsDuplicateInstance) return;
             InitializePredefinedPools();
         }
 

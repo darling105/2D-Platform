@@ -1,7 +1,5 @@
 using System.Collections;
 using UnityEngine;
-using Platformer2D.Core.Architecture;
-using Platformer2D.Core.Singletons;
 
 namespace Platformer2D.CameraControl
 {
@@ -21,13 +19,13 @@ namespace Platformer2D.CameraControl
         [Tooltip("Khoảng lệch vị trí so với nhân vật (Z luôn giữ -10)")]
         [SerializeField] private Vector3 _offset = new Vector3(0f, 1f, -10f);
         [Tooltip("Độ mượt mà khi bám theo (giá trị càng nhỏ bám càng nhanh)")]
-        [SerializeField] private float _smoothTime = 0.2f;
+        [SerializeField] private float _smoothTime = 0.14f;
 
         [Header("Lookahead (Nhìn trước)")]
-        [Tooltip("Khoảng cách Camera nhìn trước theo hướng di chuyển")]
-        [SerializeField] private float _lookaheadDistance = 1.5f;
+        [Tooltip("Khoảng cách Camera nhìn trước theo hướng di chuyển thực tế")]
+        [SerializeField] private float _lookaheadDistance = 0.85f;
         [Tooltip("Tốc độ chuyển hướng Lookahead")]
-        [SerializeField] private float _lookaheadSpeed = 3f;
+        [SerializeField] private float _lookaheadSpeed = 2.2f;
 
         [Header("Camera Bounds (Tùy chọn)")]
         [SerializeField] private bool _useBounds = false;
@@ -37,6 +35,8 @@ namespace Platformer2D.CameraControl
         private Vector3 _currentVelocity = Vector3.zero;
         private float _currentLookaheadX = 0f;
         private float _targetLookaheadX = 0f;
+        private float _lookaheadVelocity = 0f;
+        private Rigidbody2D _targetRb;
 
         // Screen Shake
         private Vector3 _shakeOffset = Vector3.zero;
@@ -61,16 +61,37 @@ namespace Platformer2D.CameraControl
                     _target = player.transform;
                 }
             }
+
+            if (_target != null)
+            {
+                _targetRb = _target.GetComponent<Rigidbody2D>();
+            }
         }
 
         private void LateUpdate()
         {
             if (_target == null) return;
 
-            // 1. Tính toán Lookahead theo hướng quay mặt / di chuyển
-            float facingDirection = Mathf.Sign(_target.localScale.x);
-            _targetLookaheadX = facingDirection * _lookaheadDistance;
-            _currentLookaheadX = Mathf.MoveTowards(_currentLookaheadX, _targetLookaheadX, _lookaheadSpeed * Time.deltaTime);
+            // 1. Lookahead theo vận tốc thực tế giúp camera lia mượt, không bị giật khi đổi hướng nhanh
+            if (_targetRb != null)
+            {
+                float vx = _targetRb.linearVelocityX;
+                if (Mathf.Abs(vx) > 1.8f)
+                {
+                    _targetLookaheadX = Mathf.Sign(vx) * _lookaheadDistance;
+                }
+                else
+                {
+                    _targetLookaheadX = Mathf.Sign(_target.localScale.x) * (_lookaheadDistance * 0.25f);
+                }
+            }
+            else
+            {
+                _targetLookaheadX = Mathf.Sign(_target.localScale.x) * _lookaheadDistance;
+            }
+
+            float lookaheadSmoothTime = 1f / Mathf.Max(0.5f, _lookaheadSpeed);
+            _currentLookaheadX = Mathf.SmoothDamp(_currentLookaheadX, _targetLookaheadX, ref _lookaheadVelocity, lookaheadSmoothTime);
 
             // 2. Vị trí đích đến của Camera
             Vector3 targetPosition = _target.position + _offset;

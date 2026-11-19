@@ -106,6 +106,7 @@ namespace Platformer2D.Core.Architecture
     public enum GameState
     {
         Initializing,
+        MainMenu,
         Playing,
         Paused,
         GameOver,
@@ -167,6 +168,42 @@ namespace Platformer2D.Core.Architecture
         public CheckpointActivatedEvent(Vector3 checkpointPosition)
         {
             CheckpointPosition = checkpointPosition;
+        }
+    }
+
+    public readonly struct RockCountChangedEvent : IEvent
+    {
+        public readonly int CurrentRocks;
+        public readonly int MaxRocks;
+
+        public RockCountChangedEvent(int currentRocks, int maxRocks)
+        {
+            CurrentRocks = currentRocks;
+            MaxRocks = maxRocks;
+        }
+    }
+
+    public readonly struct SkillStateChangedEvent : IEvent
+    {
+        public readonly int SlotIndex;
+        public readonly int NewLevel;
+
+        public SkillStateChangedEvent(int slotIndex, int newLevel)
+        {
+            SlotIndex = slotIndex;
+            NewLevel = newLevel;
+        }
+    }
+
+    public readonly struct HudToastMessageEvent : IEvent
+    {
+        public readonly string Message;
+        public readonly Color AccentColor;
+
+        public HudToastMessageEvent(string message, Color accentColor)
+        {
+            Message = message;
+            AccentColor = accentColor;
         }
     }
 

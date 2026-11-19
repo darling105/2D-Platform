@@ -12,6 +12,7 @@ namespace Platformer2D.Core.Singletons
         private static readonly object _lock = new object();
 
         public static bool HasInstance => _instance != null;
+        protected bool IsDuplicateInstance => _instance != null && _instance != this;
 
         public static T Instance
         {
@@ -39,11 +40,15 @@ namespace Platformer2D.Core.Singletons
             if (_instance == null)
             {
                 _instance = this as T;
+                if (transform.parent != null)
+                {
+                    transform.SetParent(null);
+                }
                 DontDestroyOnLoad(gameObject);
             }
             else if (_instance != this)
             {
-                Debug.LogWarning($"[PersistentSingleton] Phát hiện instance trùng lặp của {typeof(T).Name} trên GameObject '{gameObject.name}'. Đang tự hủy GameObject...");
+                enabled = false;
                 Destroy(gameObject);
             }
         }

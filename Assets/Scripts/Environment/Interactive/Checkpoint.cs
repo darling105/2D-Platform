@@ -59,7 +59,7 @@ namespace Platformer2D.Environment.Interactive
             EventBus.Publish(new PlaySoundEvent("Checkpoint", SoundType.SFX, transform.position));
         }
 
-        private void OnDrawGizmos()
+        private void OnDrawGizmosSelected()
         {
             Gizmos.color = _isActivated ? Color.green : Color.yellow;
             Gizmos.DrawWireSphere(RespawnPosition, 0.3f);

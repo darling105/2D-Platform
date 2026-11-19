@@ -24,6 +24,7 @@ namespace Platformer2D.Player.Components
         private static readonly int ThrowHash = Animator.StringToHash("Throw");
         private static readonly int IsClimbingHash = Animator.StringToHash("IsClimbing");
         private static readonly int IsPushingHash = Animator.StringToHash("IsPushing");
+        private static readonly int IsAttackingHash = Animator.StringToHash("IsAttacking");
         private static readonly int HurtHash = Animator.StringToHash("Hurt");
         private static readonly int IsDeadHash = Animator.StringToHash("IsDead");
 
@@ -60,14 +61,21 @@ namespace Platformer2D.Player.Components
         {
             if (_animator == null || isDead) return;
 
+            bool isAttacking = _combat != null && _combat.IsAttacking;
+            _animator.SetBool(IsAttackingHash, isAttacking);
+
             if (_movement != null)
             {
                 // Xử lý leo thang
                 if (_movement.IsClimbing)
                 {
                     _animator.SetBool(IsClimbingHash, true);
-                    // Dừng hình nếu không bấm phím leo
-                    _animator.speed = Mathf.Abs(_movement.VerticalClimbSpeed) > 0.1f ? 1f : 0f;
+                    _animator.SetBool(IsGroundedHash, _movement.IsGrounded);
+                    _animator.SetBool(IsPushingHash, false);
+                    _animator.SetBool(IsAttackingHash, false);
+                    // Chỉ đóng băng frame khi Animator đã thật sự chuyển vào state Pink_Monster_Climb và người chơi buông phím
+                    bool inClimbState = _animator.GetCurrentAnimatorStateInfo(0).IsName("Pink_Monster_Climb");
+                    _animator.speed = (!inClimbState || Mathf.Abs(_movement.VerticalClimbSpeed) > 0.1f) ? 1f : 0f;
                     return;
                 }
                 else
@@ -117,6 +125,7 @@ namespace Platformer2D.Player.Components
                 {
                     _animator.SetBool(IsClimbingHash, false);
                     _animator.SetBool(IsPushingHash, false);
+                    _animator.SetBool(IsAttackingHash, false);
                     _animator.Play("Pink_Monster_Idle", 0, 0f);
                 }
             }

@@ -23,7 +23,7 @@ namespace Platformer2D.Environment.Platforms
         private Quaternion _initialRotation;
         private Rigidbody2D _rb;
         private Collider2D _collider;
-        private SpriteRenderer _spriteRenderer;
+        private SpriteRenderer[] _spriteRenderers;
         private bool _isTriggered = false;
 
         private void Awake()
@@ -32,7 +32,7 @@ namespace Platformer2D.Environment.Platforms
             _initialRotation = transform.rotation;
             _rb = GetComponent<Rigidbody2D>();
             _collider = GetComponent<Collider2D>();
-            _spriteRenderer = GetComponent<SpriteRenderer>();
+            _spriteRenderers = GetComponentsInChildren<SpriteRenderer>(true);
 
             if (_rb != null)
             {
@@ -83,7 +83,7 @@ namespace Platformer2D.Environment.Platforms
             else
             {
                 if (_collider != null) _collider.enabled = false;
-                if (_spriteRenderer != null) _spriteRenderer.enabled = false;
+                SetRenderersEnabled(false);
             }
 
             // Giai đoạn 3: Chờ để hồi phục lại
@@ -107,9 +107,22 @@ namespace Platformer2D.Environment.Platforms
             transform.rotation = _initialRotation;
 
             if (_collider != null) _collider.enabled = true;
-            if (_spriteRenderer != null) _spriteRenderer.enabled = true;
+            SetRenderersEnabled(true);
 
             _isTriggered = false;
+        }
+
+        private void SetRenderersEnabled(bool enabled)
+        {
+            if (_spriteRenderers == null) return;
+
+            for (int i = 0; i < _spriteRenderers.Length; i++)
+            {
+                if (_spriteRenderers[i] != null)
+                {
+                    _spriteRenderers[i].enabled = enabled;
+                }
+            }
         }
     }
 }

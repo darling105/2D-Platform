@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using Platformer2D.CameraControl;
 using Platformer2D.Core.Architecture;
@@ -38,12 +39,42 @@ namespace Platformer2D.Combat
         [SerializeField] private GameObject _hitVfxPrefab;
         [SerializeField] private string _hitSoundId = "Hit";
 
+        private readonly HashSet<IDamageable> _hitTargetsThisSwing = new HashSet<IDamageable>();
+        private bool _useSwingSession;
+        private int _swingDamageOverride = -1;
+        private float _swingKnockbackScale = 1f;
+        private float _swingShakeScale = 1f;
+
         private void Awake()
         {
             if (_owner == null)
             {
                 _owner = transform.root.gameObject;
             }
+        }
+
+        /// <summary>
+        /// Bắt đầu một lượt vung đòn cận chiến mới (reset danh sách mục tiêu đã trúng trong lượt).
+        /// </summary>
+        public void BeginSwing(int damageOverride = -1, float knockbackScale = 1f, float shakeScale = 1f)
+        {
+            _useSwingSession = true;
+            _swingDamageOverride = damageOverride;
+            _swingKnockbackScale = knockbackScale;
+            _swingShakeScale = shakeScale;
+            _hitTargetsThisSwing.Clear();
+        }
+
+        /// <summary>
+        /// Kết thúc lượt vung đòn cận chiến và xóa trạng thái ghi đè.
+        /// </summary>
+        public void EndSwing()
+        {
+            _useSwingSession = false;
+            _swingDamageOverride = -1;
+            _swingKnockbackScale = 1f;
+            _swingShakeScale = 1f;
+            _hitTargetsThisSwing.Clear();
         }
 
         private void OnTriggerEnter2D(Collider2D other)
@@ -81,12 +112,21 @@ namespace Platformer2D.Combat
             var damageable = other.GetComponent<IDamageable>() ?? other.GetComponentInParent<IDamageable>();
             if (damageable != null && !damageable.IsDead)
             {
+                if (_useSwingSession && !_hitTargetsThisSwing.Add(damageable))
+                {
+                    return;
+                }
+
+                int finalDamage = (_useSwingSession && _swingDamageOverride > 0) ? _swingDamageOverride : _damageAmount;
+                float kbScale = _useSwingSession ? _swingKnockbackScale : 1f;
+                float shakeScale = _useSwingSession ? _swingShakeScale : 1f;
+
                 // Tính toán hướng đẩy lùi (Knockback Direction)
                 float directionX = Mathf.Sign(other.transform.position.x - (_owner != null ? _owner.transform.position.x : transform.position.x));
-                Vector2 knockback = new Vector2(directionX * _knockbackHorizontal, _knockbackVertical);
+                Vector2 knockback = new Vector2(directionX * _knockbackHorizontal * kbScale, _knockbackVertical * kbScale);
 
                 DamageData data = new DamageData(
-                    amount: _damageAmount,
+                    amount: finalDamage,
                     source: _owner,
                     hitPoint: other.ClosestPoint(transform.position),
                     knockbackForce: knockback,
@@ -98,7 +138,7 @@ namespace Platformer2D.Combat
                 // Feedback: Rung màn hình
                 if (_shakeCameraOnHit && CameraFollow2D.Instance != null)
                 {
-                    CameraFollow2D.Instance.Shake(0.12f, _shakeIntensity);
+                    CameraFollow2D.Instance.Shake(0.12f, _shakeIntensity * shakeScale);
                 }
 
                 // Feedback: Âm thanh qua EventBus

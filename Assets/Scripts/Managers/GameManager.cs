@@ -1,12 +1,13 @@
 using System;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using Platformer2D.Core.Architecture;
 using Platformer2D.Core.Singletons;
 
 namespace Platformer2D.Managers
 {
     /// <summary>
-    /// Quản lý vòng đời trò chơi: điểm số, trạng thái game (Play, Pause, Game Over, Victory).
+    /// Quản lý vòng đời trò chơi: điểm số, trạng thái game (MainMenu, Play, Pause, Game Over, Victory).
     /// </summary>
     public class GameManager : PersistentSingleton<GameManager>
     {
@@ -19,20 +20,35 @@ namespace Platformer2D.Managers
         protected override void Awake()
         {
             base.Awake();
+            if (IsDuplicateInstance) return;
+
             if (_autoStartOnAwake)
             {
-                SetState(GameState.Playing);
+                string activeScene = SceneManager.GetActiveScene().name;
+                SetState(activeScene == SceneNames.MainMenu ? GameState.MainMenu : GameState.Playing);
             }
         }
 
         private void OnEnable()
         {
+            if (IsDuplicateInstance) return;
+
             EventBus.Subscribe<PlayerDiedEvent>(OnPlayerDied);
+            EventBus.Subscribe<PlayerRespawnedEvent>(OnPlayerRespawned);
+            SceneManager.sceneLoaded += OnSceneLoaded;
         }
 
         private void OnDisable()
         {
             EventBus.Unsubscribe<PlayerDiedEvent>(OnPlayerDied);
+            EventBus.Unsubscribe<PlayerRespawnedEvent>(OnPlayerRespawned);
+            SceneManager.sceneLoaded -= OnSceneLoaded;
+        }
+
+        private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            Time.timeScale = 1f;
+            SetState(scene.name == SceneNames.MainMenu ? GameState.MainMenu : GameState.Playing);
         }
 
         /// <summary>
@@ -45,20 +61,7 @@ namespace Platformer2D.Managers
             GameState oldState = CurrentState;
             CurrentState = newState;
 
-            switch (newState)
-            {
-                case GameState.Playing:
-                    Time.timeScale = 1f;
-                    break;
-                case GameState.Paused:
-                    Time.timeScale = 0f;
-                    break;
-                case GameState.GameOver:
-                    // Có thể thêm delay hoặc slow-motion tại đây
-                    break;
-                case GameState.Victory:
-                    break;
-            }
+            Time.timeScale = newState == GameState.Paused ? 0f : 1f;
 
             EventBus.Publish(new GameStateChangedEvent(oldState, newState));
             Debug.Log($"[GameManager] Trạng thái thay đổi: {oldState} -> {newState}");
@@ -91,6 +94,19 @@ namespace Platformer2D.Managers
         }
 
         /// <summary>
+        /// Tiêu xu/điểm khi mở khóa hoặc nâng cấp kỹ năng. Trả về true nếu đủ xu.
+        /// </summary>
+        public bool TrySpendScore(int cost)
+        {
+            if (cost <= 0) return true;
+            if (CurrentScore < cost) return false;
+
+            CurrentScore -= cost;
+            EventBus.Publish(new ScoreChangedEvent(CurrentScore, -cost));
+            return true;
+        }
+
+        /// <summary>
         /// Reset điểm số về 0 (ví dụ khi bắt đầu màn mới hoặc replay).
         /// </summary>
         public void ResetScore()
@@ -103,6 +119,11 @@ namespace Platformer2D.Managers
         private void OnPlayerDied(PlayerDiedEvent evt)
         {
             SetState(GameState.GameOver);
+        }
+
+        private void OnPlayerRespawned(PlayerRespawnedEvent evt)
+        {
+            SetState(GameState.Playing);
         }
     }
 }

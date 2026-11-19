@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 using Platformer2D.Core.Architecture;
 using Platformer2D.Core.Interfaces;
@@ -23,29 +24,47 @@ namespace Platformer2D.Player.Controllers
         [Header("Health Settings")]
         [Tooltip("Lượng máu tối đa của nhân vật")]
         [SerializeField] private int _maxHealth = 3;
+        [Tooltip("Thời gian bất tử tạm (i-frames) sau khi nhận sát thương")]
+        [SerializeField] private float _invulnerabilityDuration = 0.8f;
+        [Tooltip("Nhịp nhấp nháy trong lúc bất tử tạm")]
+        [SerializeField] private float _hurtBlinkInterval = 0.08f;
 
         private Rigidbody2D _rb;
+        private SpriteRenderer _spriteRenderer;
         private PlayerInputHandler _input;
         private PlayerMovement _movement;
         private PlayerCombat _combat;
         private PlayerAnimationSync _animSync;
+        private PlayerSkills _skills;
 
         private int _currentHealth;
         private bool _isDead;
+        private bool _isInvulnerable;
+        private Color _baseSpriteColor = Color.white;
+        private Coroutine _invulnerabilityCoroutine;
 
         public bool IsDead => _isDead;
+        public bool IsInvulnerable => _isInvulnerable;
         public int CurrentHealth => _currentHealth;
         public int MaxHealth => _maxHealth;
         public bool IsAtMaxHealth => _currentHealth >= _maxHealth;
         public bool IsDashing => _movement != null && _movement.IsDashing;
+        public PlayerSkills Skills => _skills;
 
         private void Awake()
         {
             _rb = GetComponent<Rigidbody2D>();
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+            if (_spriteRenderer != null)
+            {
+                _baseSpriteColor = _spriteRenderer.color;
+            }
             _input = GetComponent<PlayerInputHandler>();
             _movement = GetComponent<PlayerMovement>();
             _combat = GetComponent<PlayerCombat>();
             _animSync = GetComponent<PlayerAnimationSync>();
+            _skills = GetComponent<PlayerSkills>();
+            if (_skills == null) _skills = gameObject.AddComponent<PlayerSkills>();
 
             _currentHealth = _maxHealth;
 
@@ -55,12 +74,18 @@ namespace Platformer2D.Player.Controllers
             _rb.constraints = RigidbodyConstraints2D.FreezeRotation;
         }
 
+        private void Start()
+        {
+            EventBus.Publish(new PlayerHealthChangedEvent(_currentHealth, _maxHealth));
+        }
+
         private void Update()
         {
             if (_isDead) return;
 
             _movement.ProcessUpdate();
             _combat.ProcessUpdate();
+            if (_skills != null) _skills.ProcessUpdate();
             _animSync.ProcessUpdate(_isDead);
         }
 
@@ -109,9 +134,9 @@ namespace Platformer2D.Player.Controllers
 
         public void TakeDamage(DamageData damageData)
         {
-            if (_isDead || IsDashing) return;
+            if (_isDead || IsDashing || _isInvulnerable || (_skills != null && _skills.IsShieldActive)) return;
 
-            _currentHealth -= damageData.Amount;
+            _currentHealth = Mathf.Max(0, _currentHealth - damageData.Amount);
             EventBus.Publish(new PlayerHealthChangedEvent(_currentHealth, _maxHealth));
 
             if (_animSync != null)
@@ -128,11 +153,66 @@ namespace Platformer2D.Player.Controllers
             {
                 Die();
             }
+            else
+            {
+                StartInvulnerability();
+            }
+        }
+
+        private void StartInvulnerability()
+        {
+            StopInvulnerability();
+            if (_invulnerabilityDuration > 0f)
+            {
+                _invulnerabilityCoroutine = StartCoroutine(InvulnerabilityRoutine());
+            }
+        }
+
+        private IEnumerator InvulnerabilityRoutine()
+        {
+            _isInvulnerable = true;
+            float elapsed = 0f;
+            float blinkStep = Mathf.Max(0.04f, _hurtBlinkInterval);
+
+            while (elapsed < _invulnerabilityDuration)
+            {
+                if (_spriteRenderer != null)
+                {
+                    bool faded = Mathf.FloorToInt(elapsed / blinkStep) % 2 == 0;
+                    _spriteRenderer.color = new Color(
+                        _baseSpriteColor.r,
+                        _baseSpriteColor.g,
+                        _baseSpriteColor.b,
+                        faded ? 0.4f : 1f);
+                }
+
+                yield return new WaitForSeconds(blinkStep);
+                elapsed += blinkStep;
+            }
+
+            StopInvulnerability();
+        }
+
+        private void StopInvulnerability()
+        {
+            if (_invulnerabilityCoroutine != null)
+            {
+                StopCoroutine(_invulnerabilityCoroutine);
+                _invulnerabilityCoroutine = null;
+            }
+
+            _isInvulnerable = false;
+            if (_spriteRenderer != null)
+            {
+                _spriteRenderer.color = _baseSpriteColor;
+            }
         }
 
         private void Die()
         {
             _isDead = true;
+            StopInvulnerability();
+            if (_skills != null) _skills.ResetRuntimeEffects();
             _rb.linearVelocity = Vector2.zero;
             _rb.bodyType = RigidbodyType2D.Kinematic;
 
@@ -166,6 +246,7 @@ namespace Platformer2D.Player.Controllers
         public void RespawnAt(Vector3 spawnPosition)
         {
             _isDead = false;
+            StopInvulnerability();
             _currentHealth = _maxHealth;
             transform.SetParent(null);
             transform.position = spawnPosition;
@@ -174,6 +255,7 @@ namespace Platformer2D.Player.Controllers
 
             if (_movement != null) _movement.ResetState();
             if (_combat != null) _combat.ResetCombat();
+            if (_skills != null) _skills.ResetRuntimeEffects();
             if (_input != null) _input.ResetInputs();
             if (_animSync != null) _animSync.SetDead(false);
 

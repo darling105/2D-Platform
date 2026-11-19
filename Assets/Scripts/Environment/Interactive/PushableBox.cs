@@ -1,6 +1,8 @@
+using System.Collections;
 using UnityEngine;
 using Platformer2D.Core.Architecture;
 using Platformer2D.Core.Interfaces;
+using Platformer2D.Items;
 
 namespace Platformer2D.Environment.Interactive
 {
@@ -24,10 +26,15 @@ namespace Platformer2D.Environment.Interactive
         [SerializeField] private bool _isBreakable = false;
         [Tooltip("Số đòn đấm để vỡ thùng")]
         [SerializeField] private int _hitsToBreak = 3;
-        [Tooltip("Vật phẩm rơi ra khi vỡ (Coin, Heart - tùy chọn)")]
+        [Tooltip("Vật phẩm rơi ra khi vỡ (Coin, Heart, Rock - tùy chọn)")]
         [SerializeField] private GameObject _dropPrefab;
+        [Tooltip("Số viên đá tự động rơi ra khi vỡ thùng nếu chưa gán Drop Prefab")]
+        [SerializeField] private int _dropRockAmount = 3;
 
         private Rigidbody2D _rb;
+        private SpriteRenderer _spriteRenderer;
+        private Color _originalColor;
+        private Coroutine _flashCoroutine;
         private int _currentHits = 0;
         private bool _isBroken = false;
 
@@ -36,6 +43,11 @@ namespace Platformer2D.Environment.Interactive
         private void Awake()
         {
             _rb = GetComponent<Rigidbody2D>();
+            _spriteRenderer = GetComponent<SpriteRenderer>();
+            if (_spriteRenderer != null)
+            {
+                _originalColor = _spriteRenderer.color;
+            }
             _rb.bodyType = RigidbodyType2D.Dynamic;
             _rb.mass = _mass;
             _rb.linearDamping = _linearDrag;
@@ -79,6 +91,22 @@ namespace Platformer2D.Environment.Interactive
             {
                 BreakBox();
             }
+            else if (_spriteRenderer != null)
+            {
+                if (_flashCoroutine != null) StopCoroutine(_flashCoroutine);
+                _flashCoroutine = StartCoroutine(HitFlashRoutine());
+            }
+        }
+
+        private IEnumerator HitFlashRoutine()
+        {
+            _spriteRenderer.color = Color.white;
+            yield return new WaitForSeconds(0.08f);
+            if (_spriteRenderer != null && !_isBroken)
+            {
+                _spriteRenderer.color = _originalColor;
+            }
+            _flashCoroutine = null;
         }
 
         private void BreakBox()
@@ -87,7 +115,11 @@ namespace Platformer2D.Environment.Interactive
 
             if (_dropPrefab != null)
             {
-                Instantiate(_dropPrefab, transform.position, Quaternion.identity);
+                Instantiate(_dropPrefab, transform.position + new Vector3(0f, 0.15f, 0f), Quaternion.identity);
+            }
+            else if (_dropRockAmount > 0)
+            {
+                RockPickup.SpawnRuntimePickup(transform.position + new Vector3(0f, 0.15f, 0f), _dropRockAmount);
             }
 
             EventBus.Publish(new PlaySoundEvent("BoxBreak", SoundType.SFX, transform.position));

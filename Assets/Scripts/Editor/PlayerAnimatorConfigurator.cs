@@ -14,7 +14,6 @@ namespace Platformer2D.EditorTools
     /// - Throw (Ném đá/đạn)
     /// - Climb (Leo thang)
     /// - Push (Đẩy thùng)
-    /// - Slide (Trượt đất)
     /// </summary>
     public static class PlayerAnimatorConfigurator
     {
@@ -38,7 +37,7 @@ namespace Platformer2D.EditorTools
             EnsureParameter(controller, "Throw", AnimatorControllerParameterType.Trigger);
             EnsureParameter(controller, "IsClimbing", AnimatorControllerParameterType.Bool);
             EnsureParameter(controller, "IsPushing", AnimatorControllerParameterType.Bool);
-            EnsureParameter(controller, "IsSliding", AnimatorControllerParameterType.Bool);
+            EnsureParameter(controller, "IsAttacking", AnimatorControllerParameterType.Bool);
             EnsureParameter(controller, "Hurt", AnimatorControllerParameterType.Trigger);
             EnsureParameter(controller, "IsDead", AnimatorControllerParameterType.Bool);
 
@@ -47,6 +46,7 @@ namespace Platformer2D.EditorTools
 
             AnimatorState idleState = null;
             AnimatorState runState = null;
+            AnimatorState jumpState = null;
             AnimatorState attack1State = null;
             AnimatorState attack2State = null;
             AnimatorState walkAttackState = null;
@@ -58,6 +58,7 @@ namespace Platformer2D.EditorTools
             {
                 if (s.state.name == "Pink_Monster_Idle") idleState = s.state;
                 else if (s.state.name == "Pink_Monster_Run") runState = s.state;
+                else if (s.state.name == "Pink_Monster_Jump") jumpState = s.state;
                 else if (s.state.name == "Pink_Monster_Attack_1") attack1State = s.state;
                 else if (s.state.name == "Pink_Monster_Attack_2") attack2State = s.state;
                 else if (s.state.name == "Pink_Monster_Walk_Attack") walkAttackState = s.state;
@@ -87,10 +88,17 @@ namespace Platformer2D.EditorTools
                 if (idleState != null) EnsureExitToState(throwState, idleState);
             }
 
-            // 5. Chuyển tiếp Climb (Leo thang)
+            // 5. Chuyển tiếp Climb (Leo thang) & chống xung đột với Jump
+            if (jumpState != null)
+            {
+                EnsureAnyStateCondition(rootStateMachine, jumpState, AnimatorConditionMode.IfNot, "IsClimbing");
+                EnsureAnyStateCondition(rootStateMachine, jumpState, AnimatorConditionMode.IfNot, "IsAttacking");
+            }
+
             if (climbState != null)
             {
                 EnsureAnyStateTransitionBool(rootStateMachine, climbState, "IsClimbing", true);
+                EnsureAnyStateCondition(rootStateMachine, climbState, AnimatorConditionMode.IfNot, "IsDead");
                 if (idleState != null)
                 {
                     bool hasExit = climbState.transitions.Any(t => t.destinationState == idleState);
@@ -178,6 +186,18 @@ namespace Platformer2D.EditorTools
                 trans.duration = 0f;
                 trans.canTransitionToSelf = false;
                 trans.AddCondition(value ? AnimatorConditionMode.If : AnimatorConditionMode.IfNot, 0, boolParam);
+            }
+        }
+
+        private static void EnsureAnyStateCondition(AnimatorStateMachine stateMachine, AnimatorState targetState, AnimatorConditionMode mode, string paramName)
+        {
+            foreach (var trans in stateMachine.anyStateTransitions)
+            {
+                if (trans.destinationState != targetState) continue;
+                if (!trans.conditions.Any(c => c.parameter == paramName && c.mode == mode))
+                {
+                    trans.AddCondition(mode, 0f, paramName);
+                }
             }
         }
 

@@ -70,7 +70,7 @@ namespace Platformer2D.Items
             }
         }
 
-        private void OnDrawGizmos()
+        private void OnDrawGizmosSelected()
         {
             // Vẽ biểu tượng hình trái tim đỏ trong Scene để dễ nhận diện vị trí
             Gizmos.color = new Color(1f, 0.2f, 0.4f, 0.8f);

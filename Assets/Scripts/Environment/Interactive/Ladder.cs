@@ -18,6 +18,8 @@ namespace Platformer2D.Environment.Interactive
         private Collider2D _ladderCollider;
 
         public float CenterX => _ladderCollider != null ? _ladderCollider.bounds.center.x : transform.position.x;
+        public float TopY => _ladderCollider != null ? _ladderCollider.bounds.max.y : transform.position.y;
+        public float BottomY => _ladderCollider != null ? _ladderCollider.bounds.min.y : transform.position.y;
 
         private void Awake()
         {
@@ -51,7 +53,7 @@ namespace Platformer2D.Environment.Interactive
 
         public bool ShouldSnapToCenter() => _snapToCenter;
 
-        private void OnDrawGizmos()
+        private void OnDrawGizmosSelected()
         {
             Gizmos.color = new Color(0.2f, 0.8f, 1f, 0.4f);
             Collider2D col = GetComponent<Collider2D>();

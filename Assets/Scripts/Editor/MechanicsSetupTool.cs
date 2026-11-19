@@ -284,10 +284,34 @@ namespace Platformer2D.EditorTools
             Undo.RegisterCreatedObjectUndo(obj, "Create Ladder");
 
             BoxCollider2D col = obj.AddComponent<BoxCollider2D>();
-            col.size = new Vector2(1.2f, 4f);
+            col.size = new Vector2(0.85f, 4.15f);
+            col.offset = new Vector2(0f, 0.075f);
             col.isTrigger = true;
 
             obj.AddComponent<Ladder>();
+
+            Sprite downSprite = LoadFirstSprite("Assets/GameAssets/Field-Tileset/Objects/Ladders/Ladder_down_1.png");
+            Sprite midSprite = LoadFirstSprite("Assets/GameAssets/Field-Tileset/Objects/Ladders/Ladder_middle_1.png");
+            Sprite topSprite = LoadFirstSprite("Assets/GameAssets/Field-Tileset/Objects/Ladders/Ladder_top_1.png");
+
+            (string name, float localY, Sprite sprite)[] segments =
+            {
+                ("Segment_Bottom", -1.5f, downSprite),
+                ("Segment_Mid_1", -0.5f, midSprite),
+                ("Segment_Mid_2", 0.5f, midSprite),
+                ("Segment_Top", 1.5f, topSprite),
+            };
+
+            foreach (var seg in segments)
+            {
+                GameObject child = new GameObject(seg.name);
+                child.transform.SetParent(obj.transform, false);
+                child.transform.localPosition = new Vector3(0f, seg.localY, 0f);
+
+                SpriteRenderer sr = child.AddComponent<SpriteRenderer>();
+                sr.sprite = seg.sprite;
+                sr.sortingOrder = -1;
+            }
 
             Vector3 spawnPos = SceneView.lastActiveSceneView != null ? SceneView.lastActiveSceneView.pivot : Vector3.zero;
             spawnPos.z = 0;
@@ -295,6 +319,21 @@ namespace Platformer2D.EditorTools
 
             Selection.activeGameObject = obj;
             Debug.Log("[Mechanics] Đã tạo Thang leo (Ladder).");
+        }
+
+        private static Sprite LoadFirstSprite(string assetPath)
+        {
+            Object[] assets = AssetDatabase.LoadAllAssetsAtPath(assetPath);
+            if (assets == null) return null;
+
+            foreach (Object asset in assets)
+            {
+                if (asset is Sprite sprite)
+                {
+                    return sprite;
+                }
+            }
+            return null;
         }
 
         [MenuItem("Tools/Platformer Mechanics/12. Tạo Thùng gỗ đẩy được (Pushable Box)")]

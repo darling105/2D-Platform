@@ -21,6 +21,10 @@ namespace Platformer2D.Combat
         [Header("Invulnerability (i-Frames)")]
         [Tooltip("Thời gian bất tử sau khi nhận sát thương (giây)")]
         [SerializeField] private float _invulnerabilityDuration = 0.8f;
+        [Tooltip("Thời gian bất tử cho Quái/Vật thể không phải Player (ngắn để nhận đủ combo nhiều đòn)")]
+        [SerializeField] private float _enemyInvulnerabilityDuration = 0.08f;
+        [Tooltip("Thời gian nháy màu khi trúng đòn đối với Quái/Vật thể")]
+        [SerializeField] private float _hitFlashDuration = 0.12f;
         [Tooltip("Màu nhấp nháy khi bị thương")]
         [SerializeField] private Color _flashColor = new Color(1f, 0.3f, 0.3f, 0.7f);
 
@@ -30,6 +34,8 @@ namespace Platformer2D.Combat
         private int _currentHealth;
         private bool _isInvulnerable;
         private bool _isDead;
+        private Coroutine _invulnerabilityCoroutine;
+        private Coroutine _hitFlashCoroutine;
 
         private SpriteRenderer _spriteRenderer;
         private Color _originalColor;
@@ -92,9 +98,20 @@ namespace Platformer2D.Combat
             {
                 Die();
             }
-            else if (_invulnerabilityDuration > 0f)
+            else
             {
-                StartCoroutine(InvulnerabilityRoutine());
+                float invulnDuration = _isPlayer ? _invulnerabilityDuration : _enemyInvulnerabilityDuration;
+                if (invulnDuration > 0f)
+                {
+                    if (_invulnerabilityCoroutine != null) StopCoroutine(_invulnerabilityCoroutine);
+                    _invulnerabilityCoroutine = StartCoroutine(InvulnerabilityRoutine(invulnDuration));
+                }
+
+                if (!_isPlayer && _hitFlashDuration > 0f)
+                {
+                    if (_hitFlashCoroutine != null) StopCoroutine(_hitFlashCoroutine);
+                    _hitFlashCoroutine = StartCoroutine(HitFlashRoutine());
+                }
             }
         }
 
@@ -115,6 +132,19 @@ namespace Platformer2D.Combat
         {
             if (_isDead) return;
             _isDead = true;
+
+            if (_invulnerabilityCoroutine != null)
+            {
+                StopCoroutine(_invulnerabilityCoroutine);
+                _invulnerabilityCoroutine = null;
+            }
+            if (_hitFlashCoroutine != null)
+            {
+                StopCoroutine(_hitFlashCoroutine);
+                _hitFlashCoroutine = null;
+            }
+            _isInvulnerable = false;
+            if (_spriteRenderer != null) _spriteRenderer.color = _originalColor;
 
             OnDeath?.Invoke();
 
@@ -143,27 +173,51 @@ namespace Platformer2D.Combat
             }
         }
 
-        private IEnumerator InvulnerabilityRoutine()
+        private IEnumerator InvulnerabilityRoutine(float duration)
         {
             _isInvulnerable = true;
-            float elapsed = 0f;
-            float blinkInterval = 0.1f;
 
-            while (elapsed < _invulnerabilityDuration)
+            if (_isPlayer)
             {
-                if (_spriteRenderer != null)
+                float elapsed = 0f;
+                float blinkInterval = 0.1f;
+
+                while (elapsed < duration)
                 {
-                    _spriteRenderer.color = (_spriteRenderer.color == _originalColor) ? _flashColor : _originalColor;
+                    if (_spriteRenderer != null)
+                    {
+                        _spriteRenderer.color = (_spriteRenderer.color == _originalColor) ? _flashColor : _originalColor;
+                    }
+                    yield return new WaitForSeconds(blinkInterval);
+                    elapsed += blinkInterval;
                 }
-                yield return new WaitForSeconds(blinkInterval);
-                elapsed += blinkInterval;
+
+                if (_spriteRenderer != null && !_isDead)
+                {
+                    _spriteRenderer.color = _originalColor;
+                }
+            }
+            else
+            {
+                yield return new WaitForSeconds(duration);
             }
 
+            _isInvulnerable = false;
+            _invulnerabilityCoroutine = null;
+        }
+
+        private IEnumerator HitFlashRoutine()
+        {
             if (_spriteRenderer != null)
             {
-                _spriteRenderer.color = _originalColor;
+                _spriteRenderer.color = _flashColor;
+                yield return new WaitForSeconds(_hitFlashDuration);
+                if (_spriteRenderer != null && !_isDead)
+                {
+                    _spriteRenderer.color = _originalColor;
+                }
             }
-            _isInvulnerable = false;
+            _hitFlashCoroutine = null;
         }
     }
 }

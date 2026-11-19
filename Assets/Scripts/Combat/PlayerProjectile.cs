@@ -29,6 +29,7 @@ namespace Platformer2D.Combat
 
         private Rigidbody2D _rb;
         private Vector2 _direction = Vector2.right;
+        private GameObject _owner;
 
         private void Awake()
         {
@@ -48,6 +49,7 @@ namespace Platformer2D.Combat
 
         public void Initialize(Vector2 direction, GameObject owner)
         {
+            _owner = owner;
             _direction = direction.normalized;
             _rb.linearVelocity = _direction * _speed;
 
@@ -58,7 +60,8 @@ namespace Platformer2D.Combat
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            // Bỏ qua nếu chạm chính người chơi
+            // Bỏ qua nếu chạm chính người ném hoặc collider con của người ném (hitbox, v.v.)
+            if (_owner != null && (other.gameObject == _owner || other.transform.IsChildOf(_owner.transform))) return;
             if (other.CompareTag("Player")) return;
 
             IDamageable damageable = other.GetComponent<IDamageable>() ?? other.GetComponentInParent<IDamageable>();

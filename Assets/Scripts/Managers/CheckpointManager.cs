@@ -15,6 +15,8 @@ namespace Platformer2D.Managers
     /// </summary>
     public class CheckpointManager : Singleton<CheckpointManager>
     {
+        [Tooltip("Tự động hồi sinh ngay sau khi chết mà không chờ người chơi bấm nút trên bảng Game Over")]
+        [SerializeField] private bool _autoRespawnOnDeath = false;
         [Tooltip("Thời gian chờ trước khi hồi sinh sau khi chết (giây)")]
         [SerializeField] private float _respawnDelay = 1.2f;
         [Tooltip("Điểm xuất phát mặc định (nếu chưa chạm Checkpoint nào)")]
@@ -54,13 +56,29 @@ namespace Platformer2D.Managers
 
         private void OnPlayerDied(PlayerDiedEvent evt)
         {
-            StartCoroutine(RespawnRoutine());
+            if (_autoRespawnOnDeath)
+            {
+                StartCoroutine(RespawnRoutine());
+            }
+        }
+
+        /// <summary>
+        /// Hồi sinh nhân vật ngay lập tức tại Checkpoint gần nhất (dùng khi bấm nút Checkpoint trên Game Over UI).
+        /// </summary>
+        public void RespawnNow()
+        {
+            StopAllCoroutines();
+            ExecuteRespawn();
         }
 
         private IEnumerator RespawnRoutine()
         {
             yield return new WaitForSeconds(_respawnDelay);
+            ExecuteRespawn();
+        }
 
+        private void ExecuteRespawn()
+        {
             if (_playerController == null)
             {
                 _playerController = FindAnyObjectByType<PlayerController>();
