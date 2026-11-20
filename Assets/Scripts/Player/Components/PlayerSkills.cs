@@ -301,14 +301,15 @@ namespace Platformer2D.Player.Components
         private void CastFireball(int damage)
         {
             float facingDir = (_movement == null || _movement.IsFacingRight) ? 1f : -1f;
-            Vector3 spawnPos = transform.position + new Vector3(facingDir * 0.55f, 0.05f, 0f);
+            // Spawn ngang ngực người chơi (+0.12f), đẩy ra phía trước một khoảng vừa tầm (+0.45f)
+            Vector3 spawnPos = transform.position + new Vector3(facingDir * 0.45f, 0.12f, 0f);
 
             GameObject fbObj = new GameObject("Skill_Fireball");
             fbObj.transform.position = spawnPos;
             fbObj.AddComponent<SpriteRenderer>();
 
             CircleCollider2D col = fbObj.AddComponent<CircleCollider2D>();
-            col.radius = 0.34f;
+            col.radius = 0.20f;
             col.isTrigger = true;
 
             SkillFireballProjectile projectile = fbObj.AddComponent<SkillFireballProjectile>();
@@ -325,8 +326,9 @@ namespace Platformer2D.Player.Components
         private void CastLightning(int damage)
         {
             float facingDir = (_movement == null || _movement.IsFacingRight) ? 1f : -1f;
-            Vector3 origin = transform.position + new Vector3(facingDir * 0.45f, 0.08f, 0f);
-            float scale = 2.35f;
+            Vector3 origin = transform.position + new Vector3(facingDir * 0.35f, 0.08f, 0f);
+            // Kích thước chuẩn 0.85f cân đối hoàn hảo với người chơi
+            float scale = 0.85f;
 
             Sprite[] frames = GetSkillFrames((int)PlayerSkillSlot.Lightning);
             if (frames != null && frames.Length > 0)
@@ -342,11 +344,11 @@ namespace Platformer2D.Player.Components
                 anim.Initialize(frames, 22f);
             }
 
-            Vector2 hitCenter = (Vector2)origin + new Vector2(facingDir * 2.3f, 0.08f);
-            Vector2 hitSize = new Vector2(4.6f, 2.4f);
+            Vector2 hitCenter = (Vector2)origin + new Vector2(facingDir * 1.35f, 0.05f);
+            Vector2 hitSize = new Vector2(2.7f, 1.3f);
             ApplyBoxDamage(hitCenter, hitSize, damage, new Vector2(facingDir * 5.5f, 3.5f));
 
-            CameraFollow2D.Instance?.Shake(0.16f, 0.18f);
+            CameraFollow2D.Instance?.Shake(0.14f, 0.15f);
             EventBus.Publish(new PlaySoundEvent("Attack", SoundType.SFX, origin));
         }
 
@@ -368,8 +370,9 @@ namespace Platformer2D.Player.Components
             if (_shieldVfxObject != null) Destroy(_shieldVfxObject);
             _shieldVfxObject = new GameObject("VFX_MagicShieldAura");
             _shieldVfxObject.transform.SetParent(transform, false);
-            _shieldVfxObject.transform.localPosition = new Vector3(0f, 0.05f, 0f);
-            _shieldVfxObject.transform.localScale = Vector3.one * 1.75f;
+            _shieldVfxObject.transform.localPosition = new Vector3(0f, 0.02f, 0f);
+            // Kích thước 0.80f ôm trọn vừa vặn cơ thể người chơi như một quả cầu bảo vệ
+            _shieldVfxObject.transform.localScale = Vector3.one * 0.80f;
 
             SpriteRenderer shieldSr = _shieldVfxObject.AddComponent<SpriteRenderer>();
             ConfigureVfxRenderer(shieldSr, 1);
@@ -419,7 +422,7 @@ namespace Platformer2D.Player.Components
         private void ApplyShieldPulse()
         {
             Vector2 center = transform.position;
-            Collider2D[] hits = Physics2D.OverlapCircleAll(center, 0.95f);
+            Collider2D[] hits = Physics2D.OverlapCircleAll(center, 0.85f);
             HashSet<IDamageable> hitTargets = new HashSet<IDamageable>();
 
             for (int i = 0; i < hits.Length; i++)
@@ -449,7 +452,8 @@ namespace Platformer2D.Player.Components
 
             for (int w = 0; w < waveCount; w++)
             {
-                float spikeX = baseX + facingDir * (1.25f + w * 1.35f);
+                // Bước nhịp gai đất cách nhau 0.85f tạo thành đợt sóng gai nhấp nhô liên hoàn
+                float spikeX = baseX + facingDir * (0.85f + w * 0.85f);
                 float groundY = FindGroundSurfaceY(spikeX, probeStartY, fallbackFloorY);
                 Vector3 spikePos = new Vector3(spikeX, groundY, 0f);
 
@@ -457,7 +461,8 @@ namespace Platformer2D.Player.Components
                 {
                     GameObject spikeObj = new GameObject($"VFX_EarthSpike_{w}");
                     spikeObj.transform.position = spikePos;
-                    spikeObj.transform.localScale = new Vector3(facingDir * 2.15f, 2.15f, 1f);
+                    // Kích thước 0.85f cao ngang thắt lưng / vai người chơi
+                    spikeObj.transform.localScale = new Vector3(facingDir * 0.85f, 0.85f, 1f);
 
                     SpriteRenderer sr = spikeObj.AddComponent<SpriteRenderer>();
                     ConfigureVfxRenderer(sr, 2);
@@ -467,13 +472,13 @@ namespace Platformer2D.Player.Components
                 }
 
                 ApplyBoxDamage(
-                    new Vector2(spikeX, groundY + 0.75f),
-                    new Vector2(1.35f, 1.65f),
+                    new Vector2(spikeX, groundY + 0.45f),
+                    new Vector2(0.9f, 1.0f),
                     damage,
-                    new Vector2(facingDir * 3.5f, 6.8f),
+                    new Vector2(facingDir * 3.5f, 6.0f),
                     alreadyHit);
 
-                CameraFollow2D.Instance?.Shake(0.10f, 0.12f);
+                CameraFollow2D.Instance?.Shake(0.08f, 0.10f);
                 EventBus.Publish(new PlaySoundEvent("Attack", SoundType.SFX, spikePos));
                 yield return new WaitForSeconds(0.085f);
             }

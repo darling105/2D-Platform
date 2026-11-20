@@ -17,6 +17,9 @@ namespace Platformer2D.Managers
         public GameState CurrentState { get; private set; } = GameState.Initializing;
         public int CurrentScore { get; private set; } = 0;
 
+        private int _silverKeys;
+        private int _goldenKeys;
+
         protected override void Awake()
         {
             base.Awake();
@@ -48,6 +51,7 @@ namespace Platformer2D.Managers
         private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
         {
             Time.timeScale = 1f;
+            ResetKeys();
             SetState(scene.name == SceneNames.MainMenu ? GameState.MainMenu : GameState.Playing);
         }
 
@@ -61,7 +65,7 @@ namespace Platformer2D.Managers
             GameState oldState = CurrentState;
             CurrentState = newState;
 
-            Time.timeScale = newState == GameState.Paused ? 0f : 1f;
+            Time.timeScale = (newState == GameState.Paused || newState == GameState.Victory) ? 0f : 1f;
 
             EventBus.Publish(new GameStateChangedEvent(oldState, newState));
             Debug.Log($"[GameManager] Trạng thái thay đổi: {oldState} -> {newState}");
@@ -107,13 +111,59 @@ namespace Platformer2D.Managers
         }
 
         /// <summary>
-        /// Reset điểm số về 0 (ví dụ khi bắt đầu màn mới hoặc replay).
+        /// Reset điểm số và chìa khóa về 0 (ví dụ khi bắt đầu màn mới hoặc replay).
         /// </summary>
         public void ResetScore()
         {
             int delta = -CurrentScore;
             CurrentScore = 0;
             EventBus.Publish(new ScoreChangedEvent(CurrentScore, delta));
+            ResetKeys();
+        }
+
+        public int GetKeyCount(KeyType type) => type == KeyType.Golden ? _goldenKeys : _silverKeys;
+
+        public void AddKey(KeyType type, int amount = 1)
+        {
+            if (amount <= 0) return;
+
+            int updated;
+            if (type == KeyType.Golden)
+            {
+                _goldenKeys += amount;
+                updated = _goldenKeys;
+            }
+            else
+            {
+                _silverKeys += amount;
+                updated = _silverKeys;
+            }
+
+            EventBus.Publish(new KeyCountChangedEvent(type, updated));
+        }
+
+        public bool TryUseKey(KeyType type)
+        {
+            if (type == KeyType.Golden)
+            {
+                if (_goldenKeys <= 0) return false;
+                _goldenKeys--;
+                EventBus.Publish(new KeyCountChangedEvent(type, _goldenKeys));
+                return true;
+            }
+
+            if (_silverKeys <= 0) return false;
+            _silverKeys--;
+            EventBus.Publish(new KeyCountChangedEvent(type, _silverKeys));
+            return true;
+        }
+
+        public void ResetKeys()
+        {
+            _silverKeys = 0;
+            _goldenKeys = 0;
+            EventBus.Publish(new KeyCountChangedEvent(KeyType.Silver, 0));
+            EventBus.Publish(new KeyCountChangedEvent(KeyType.Golden, 0));
         }
 
         private void OnPlayerDied(PlayerDiedEvent evt)

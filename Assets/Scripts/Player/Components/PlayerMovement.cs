@@ -292,11 +292,12 @@ namespace Platformer2D.Player.Components
                     if (_mainCollider != null && Physics2D.GetIgnoreCollision(hit.collider, _mainCollider)) continue;
 
                     // Với sàn 1 chiều (PlatformEffector2D), chỉ coi là đứng trên sàn khi tia đánh từ trên mặt sàn xuống
-                    // VÀ đáy collider nhân vật đã vượt lên sát mặt sàn (không nhận nhầm khi đang leo từ dưới xuyên lên)
+                    // VÀ đáy collider nhân vật đã vượt lên sát mặt sàn (khi đang leo thang phải vượt hẳn qua mặt sàn mới thoát)
                     if (hit.collider.usedByEffector)
                     {
                         if (hit.distance <= 0.001f) continue;
-                        if (_mainCollider != null && _mainCollider.bounds.min.y < hit.point.y - 0.02f) continue;
+                        float minFootClearance = _isClimbing ? 0.015f : -0.015f;
+                        if (_mainCollider != null && _mainCollider.bounds.min.y < hit.point.y + minFootClearance) continue;
                     }
 
                     // Chỉ công nhận là mặt đất nếu bề mặt tiếp xúc có phương vuông góc hướng lên trên (normal.y > 0.6)
@@ -686,7 +687,7 @@ namespace Platformer2D.Player.Components
 
             if (_canClimb && !_isClimbing && _ladderRegrabTimer <= 0f && _currentLadder != null)
             {
-                bool wantsClimbUp = _input.VerticalInput > 0.2f && transform.position.y < _currentLadder.TopY + 0.1f;
+                bool wantsClimbUp = _input.VerticalInput > 0.2f && (!_isGrounded || transform.position.y < _currentLadder.TopY - 0.1f);
                 bool wantsClimbDown = _input.VerticalInput < -0.2f && (!_isGrounded || _currentOneWayPlatform != null || transform.position.y > _currentLadder.BottomY + 0.7f);
 
                 if (wantsClimbUp || wantsClimbDown)
@@ -715,6 +716,7 @@ namespace Platformer2D.Player.Components
                 {
                     // Đã leo lên đứng vững trên sàn đỉnh thang (dù đang giữ hay vừa thả phím W) -> tự thoát leo thang gọn gàng
                     StopClimbing();
+                    _ladderRegrabTimer = 0.2f;
                     if (_rb.linearVelocityY > 0f) _rb.linearVelocityY = 0f;
                 }
             }
@@ -746,7 +748,8 @@ namespace Platformer2D.Player.Components
             if (_input == null) return;
 
             float verticalVel = _input.VerticalInput * _climbSpeed;
-            if (_currentLadder != null && verticalVel > 0f && transform.position.y >= _currentLadder.TopY + 0.35f)
+            float halfHeight = _mainCollider != null ? _mainCollider.bounds.extents.y : 0.46f;
+            if (_currentLadder != null && verticalVel > 0f && transform.position.y >= _currentLadder.TopY + halfHeight - 0.01f)
             {
                 verticalVel = 0f;
             }

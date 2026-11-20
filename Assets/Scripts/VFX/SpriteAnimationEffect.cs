@@ -55,6 +55,29 @@ namespace Platformer2D.VFX
             }
         }
 
+        /// <summary>
+        /// Tạo nhanh hiệu ứng Sprite Frame-by-Frame tại vị trí bất kỳ và tự hủy sau khi phát xong.
+        /// </summary>
+        public static void SpawnOneShot(
+            Vector3 position,
+            Sprite[] frames,
+            float fps = 16f,
+            int sortingOrder = 5,
+            float scale = 1f)
+        {
+            if (frames == null || frames.Length == 0) return;
+
+            GameObject vfxObj = new GameObject("SpriteVfx_OneShot");
+            vfxObj.transform.position = position;
+            vfxObj.transform.localScale = new Vector3(scale, scale, 1f);
+
+            SpriteRenderer sr = vfxObj.AddComponent<SpriteRenderer>();
+            sr.sortingOrder = sortingOrder;
+
+            SpriteAnimationEffect effect = vfxObj.AddComponent<SpriteAnimationEffect>();
+            effect.Initialize(frames, fps);
+        }
+
         private IEnumerator PlayRoutine()
         {
             float delay = 1f / Mathf.Max(1f, _frameRate);

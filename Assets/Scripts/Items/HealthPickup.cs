@@ -1,6 +1,7 @@
 using UnityEngine;
 using Platformer2D.Core.Architecture;
 using Platformer2D.Core.Interfaces;
+using Platformer2D.VFX;
 
 namespace Platformer2D.Items
 {
@@ -32,10 +33,19 @@ namespace Platformer2D.Items
 
         private Vector3 _basePosition;
 
+        public int HealAmount => _healAmount;
+
         private void Awake()
         {
             Collider2D col = GetComponent<Collider2D>();
             col.isTrigger = true;
+            AmbientGlowPulse.Attach(transform, new Color(1f, 0.35f, 0.50f, 0.26f), 0.90f, -1);
+        }
+
+        public void ResetBasePosition(Vector3 newPos)
+        {
+            _basePosition = newPos;
+            transform.position = newPos;
         }
 
         private void Start()
@@ -68,6 +78,23 @@ namespace Platformer2D.Items
                 EventBus.Publish(new PlaySoundEvent(_pickupSound, SoundType.SFX, transform.position));
                 Destroy(gameObject);
             }
+        }
+
+        /// <summary>
+        /// Thu nhận trực tiếp vật phẩm hồi máu (dùng khi vật phẩm bay từ rương ném thẳng vào người chơi).
+        /// </summary>
+        public bool CollectDirectly(IHealable healable)
+        {
+            if (healable == null || healable.IsAtMaxHealth) return false;
+
+            healable.Heal(_healAmount);
+            if (_pickupVfxPrefab != null)
+            {
+                Instantiate(_pickupVfxPrefab, transform.position, Quaternion.identity);
+            }
+            EventBus.Publish(new PlaySoundEvent(_pickupSound, SoundType.SFX, transform.position));
+            Destroy(gameObject);
+            return true;
         }
 
         private void OnDrawGizmosSelected()

@@ -183,6 +183,24 @@ namespace Platformer2D.Core.Architecture
         }
     }
 
+    public enum KeyType
+    {
+        Silver = 0,
+        Golden = 1
+    }
+
+    public readonly struct KeyCountChangedEvent : IEvent
+    {
+        public readonly KeyType Type;
+        public readonly int CurrentCount;
+
+        public KeyCountChangedEvent(KeyType type, int currentCount)
+        {
+            Type = type;
+            CurrentCount = currentCount;
+        }
+    }
+
     public readonly struct SkillStateChangedEvent : IEvent
     {
         public readonly int SlotIndex;

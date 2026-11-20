@@ -1,5 +1,6 @@
 using System.Collections;
 using UnityEngine;
+using Platformer2D.CameraControl;
 using Platformer2D.Core.Architecture;
 using Platformer2D.Core.Interfaces;
 using Platformer2D.Environment.Interactive;
@@ -28,6 +29,8 @@ namespace Platformer2D.Player.Controllers
         [SerializeField] private float _invulnerabilityDuration = 0.8f;
         [Tooltip("Nhịp nhấp nháy trong lúc bất tử tạm")]
         [SerializeField] private float _hurtBlinkInterval = 0.08f;
+        [Tooltip("Màu nhấp nháy đỏ khi bị thương")]
+        [SerializeField] private Color _hurtFlashColor = new Color(1f, 0.22f, 0.22f, 0.92f);
 
         private Rigidbody2D _rb;
         private SpriteRenderer _spriteRenderer;
@@ -40,10 +43,13 @@ namespace Platformer2D.Player.Controllers
         private int _currentHealth;
         private bool _isDead;
         private bool _isInvulnerable;
+        private float _hurtLockTimer;
         private Color _baseSpriteColor = Color.white;
         private Coroutine _invulnerabilityCoroutine;
+        private Coroutine _deathSequenceCoroutine;
 
         public bool IsDead => _isDead;
+        public bool IsHurt => _hurtLockTimer > 0f;
         public bool IsInvulnerable => _isInvulnerable;
         public int CurrentHealth => _currentHealth;
         public int MaxHealth => _maxHealth;
@@ -82,6 +88,13 @@ namespace Platformer2D.Player.Controllers
         private void Update()
         {
             if (_isDead) return;
+
+            if (_hurtLockTimer > 0f)
+            {
+                _hurtLockTimer -= Time.deltaTime;
+                _animSync.ProcessUpdate(_isDead);
+                return;
+            }
 
             _movement.ProcessUpdate();
             _combat.ProcessUpdate();
@@ -139,14 +152,14 @@ namespace Platformer2D.Player.Controllers
             _currentHealth = Mathf.Max(0, _currentHealth - damageData.Amount);
             EventBus.Publish(new PlayerHealthChangedEvent(_currentHealth, _maxHealth));
 
-            if (_animSync != null)
-            {
-                _animSync.TriggerHurt();
-            }
-
-            if (damageData.KnockbackForce != Vector2.zero)
+            if (damageData.KnockbackForce != Vector2.zero && _rb != null)
             {
                 _rb.linearVelocity = damageData.KnockbackForce;
+            }
+
+            if (CameraFollow2D.Instance != null)
+            {
+                CameraFollow2D.Instance.Shake(0.16f, 0.20f);
             }
 
             if (_currentHealth <= 0)
@@ -155,6 +168,12 @@ namespace Platformer2D.Player.Controllers
             }
             else
             {
+                if (_animSync != null)
+                {
+                    _animSync.TriggerHurt(0.35f);
+                }
+                _hurtLockTimer = 0.28f;
+                EventBus.Publish(new PlaySoundEvent("PlayerHurt", SoundType.SFX, transform.position));
                 StartInvulnerability();
             }
         }
@@ -162,6 +181,10 @@ namespace Platformer2D.Player.Controllers
         private void StartInvulnerability()
         {
             StopInvulnerability();
+            if (_spriteRenderer != null)
+            {
+                _spriteRenderer.color = _hurtFlashColor;
+            }
             if (_invulnerabilityDuration > 0f)
             {
                 _invulnerabilityCoroutine = StartCoroutine(InvulnerabilityRoutine());
@@ -178,12 +201,10 @@ namespace Platformer2D.Player.Controllers
             {
                 if (_spriteRenderer != null)
                 {
-                    bool faded = Mathf.FloorToInt(elapsed / blinkStep) % 2 == 0;
-                    _spriteRenderer.color = new Color(
-                        _baseSpriteColor.r,
-                        _baseSpriteColor.g,
-                        _baseSpriteColor.b,
-                        faded ? 0.4f : 1f);
+                    bool isFlash = Mathf.FloorToInt(elapsed / blinkStep) % 2 == 0;
+                    _spriteRenderer.color = isFlash
+                        ? _hurtFlashColor
+                        : new Color(_baseSpriteColor.r, _baseSpriteColor.g, _baseSpriteColor.b, 0.65f);
                 }
 
                 yield return new WaitForSeconds(blinkStep);
@@ -210,18 +231,62 @@ namespace Platformer2D.Player.Controllers
 
         private void Die()
         {
+            if (_isDead) return;
             _isDead = true;
+            _hurtLockTimer = 0f;
             StopInvulnerability();
             if (_skills != null) _skills.ResetRuntimeEffects();
-            _rb.linearVelocity = Vector2.zero;
-            _rb.bodyType = RigidbodyType2D.Kinematic;
+
+            // Dừng vận tốc ngang, nhưng vẫn giữ rơi tự nhiên xuống mặt đất nếu đang ở trên không
+            if (_rb != null)
+            {
+                _rb.linearVelocityX = 0f;
+            }
 
             if (_animSync != null)
             {
                 _animSync.SetDead(true);
             }
 
+            if (CameraFollow2D.Instance != null)
+            {
+                CameraFollow2D.Instance.Shake(0.24f, 0.28f);
+            }
+
+            EventBus.Publish(new PlaySoundEvent("PlayerDeath", SoundType.SFX, transform.position));
+
+            if (_deathSequenceCoroutine != null)
+            {
+                StopCoroutine(_deathSequenceCoroutine);
+            }
+            _deathSequenceCoroutine = StartCoroutine(DeathSequenceRoutine());
+        }
+
+        private IEnumerator DeathSequenceRoutine()
+        {
+            // Chớp đỏ ngắn lúc hết máu tạo cảm giác dính đòn chí mạng
+            if (_spriteRenderer != null)
+            {
+                _spriteRenderer.color = _hurtFlashColor;
+            }
+            yield return new WaitForSeconds(0.12f);
+            if (_spriteRenderer != null)
+            {
+                _spriteRenderer.color = _baseSpriteColor;
+            }
+
+            // Chờ phần còn lại của hoạt ảnh Pink_Monster_Death (8 frame, ~1.02s) chạy xong trọn vẹn
+            yield return new WaitForSeconds(1.03f);
+
+            if (_rb != null)
+            {
+                _rb.linearVelocity = Vector2.zero;
+                _rb.bodyType = RigidbodyType2D.Kinematic;
+            }
+
+            // Sau khi chạy xong toàn bộ hoạt ảnh chết, MỚI phát PlayerDiedEvent để kích hoạt popup menu Game Over!
             EventBus.Publish(new PlayerDiedEvent(transform.position));
+            _deathSequenceCoroutine = null;
         }
 
         #endregion
@@ -245,7 +310,14 @@ namespace Platformer2D.Player.Controllers
         /// </summary>
         public void RespawnAt(Vector3 spawnPosition)
         {
+            if (_deathSequenceCoroutine != null)
+            {
+                StopCoroutine(_deathSequenceCoroutine);
+                _deathSequenceCoroutine = null;
+            }
+
             _isDead = false;
+            _hurtLockTimer = 0f;
             StopInvulnerability();
             _currentHealth = _maxHealth;
             transform.SetParent(null);

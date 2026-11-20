@@ -20,14 +20,15 @@ namespace Platformer2D.Combat
 
         private Sprite[] _loopFrames;
         private Sprite[] _explosionFrames;
-        private float _speed = 13.5f;
+        private float _speed = 12.0f;
         private int _damage = 2;
-        private float _aoeRadius = 1.45f;
+        private float _aoeRadius = 1.15f;
         private float _directionX = 1f;
         private GameObject _owner;
         private float _animTimer;
         private int _frameIndex;
         private bool _hasDetonated;
+        private float _spawnGraceTimer = 0.08f;
 
         private const float AnimationFps = 16f;
         private const float LifeTime = 2.5f;
@@ -41,8 +42,12 @@ namespace Platformer2D.Combat
             _rb.gravityScale = 0f;
             _rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
-            Collider2D col = GetComponent<Collider2D>();
-            col.isTrigger = true;
+            CircleCollider2D col = GetComponent<CircleCollider2D>();
+            if (col != null)
+            {
+                col.radius = 0.20f;
+                col.isTrigger = true;
+            }
         }
 
         private void Start()
@@ -64,6 +69,7 @@ namespace Platformer2D.Combat
             _owner = owner;
             _loopFrames = loopFrames;
             _explosionFrames = explosionFrames;
+            _spawnGraceTimer = 0.08f;
 
             if (_sr != null)
             {
@@ -75,12 +81,18 @@ namespace Platformer2D.Combat
                 }
             }
 
-            transform.localScale = new Vector3(_directionX * 1.85f, 1.85f, 1f);
+            // Tỉ lệ scale cân đối 0.70f tương xứng hoàn hảo với vóc dáng nhân vật (~0.9m)
+            transform.localScale = new Vector3(_directionX * 0.70f, 0.70f, 1f);
             _rb.linearVelocity = new Vector2(_directionX * _speed, 0f);
         }
 
         private void Update()
         {
+            if (_spawnGraceTimer > 0f)
+            {
+                _spawnGraceTimer -= Time.deltaTime;
+            }
+
             if (_hasDetonated || _loopFrames == null || _loopFrames.Length == 0 || _sr == null) return;
 
             _animTimer += Time.deltaTime * AnimationFps;
@@ -98,6 +110,7 @@ namespace Platformer2D.Combat
             if (_owner != null && (other.gameObject == _owner || other.transform.IsChildOf(_owner.transform))) return;
             if (other.CompareTag("Player")) return;
 
+            // Kiểm tra va chạm mục tiêu quái vật / thùng gỗ có thể nhận sát thương
             IDamageable directTarget = other.GetComponent<IDamageable>() ?? other.GetComponentInParent<IDamageable>();
             if (directTarget != null && !directTarget.IsDead)
             {
@@ -105,10 +118,14 @@ namespace Platformer2D.Combat
                 return;
             }
 
-            if (!other.isTrigger)
-            {
-                Detonate(null);
-            }
+            // Bỏ qua tất cả các Trigger vùng (như Checkpoint, Ladder, Pickup, Camera Zone)
+            if (other.isTrigger) return;
+
+            // Trong 0.08s đầu khi mới rời tay, bỏ qua va chạm địa hình để tránh nổ ngay tại bệ đứng
+            if (_spawnGraceTimer > 0f) return;
+
+            // Va chạm tường cứng hoặc chướng ngại vật vật lý
+            Detonate(null);
         }
 
         private void Detonate(IDamageable directTarget)
@@ -153,7 +170,7 @@ namespace Platformer2D.Combat
 
             GameObject vfxObj = new GameObject("VFX_FireballExplosion");
             vfxObj.transform.position = pos;
-            vfxObj.transform.localScale = new Vector3(2.1f, 2.1f, 1f);
+            vfxObj.transform.localScale = new Vector3(0.95f, 0.95f, 1f);
 
             SpriteRenderer vfxSr = vfxObj.AddComponent<SpriteRenderer>();
             if (_sr != null)

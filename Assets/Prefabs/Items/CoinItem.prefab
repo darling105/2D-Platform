@@ -83,12 +83,12 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 5848064539680731454, guid: 8b6b6d5fe32f21a42a2a00ac7cce7a9c, type: 3}
+  m_Sprite: {fileID: -3338749442709606003, guid: 8b6b6d5fe32f21a42a2a00ac7cce7a9c, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 0.53125, y: 0.59375}
+  m_Size: {x: 0.59375, y: 0.59375}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -129,7 +129,7 @@ CircleCollider2D:
   m_CompositeOperation: 0
   m_CompositeOrder: 0
   m_Offset: {x: 0, y: 0}
-  m_Radius: 0.35
+  m_Radius: 0.26
 --- !u!114 &3876499980030750379
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -145,3 +145,16 @@ MonoBehaviour:
   _coinValue: 10
   _soundId: Coin
   _collectVfxPrefab: {fileID: 0}
+  _animationFrames:
+  - {fileID: -3338749442709606003, guid: 8b6b6d5fe32f21a42a2a00ac7cce7a9c, type: 3}
+  - {fileID: 5848064539680731454, guid: 8b6b6d5fe32f21a42a2a00ac7cce7a9c, type: 3}
+  - {fileID: -2652133911391862278, guid: 8b6b6d5fe32f21a42a2a00ac7cce7a9c, type: 3}
+  - {fileID: 5522397121026081838, guid: 8b6b6d5fe32f21a42a2a00ac7cce7a9c, type: 3}
+  - {fileID: 4786861022352539597, guid: 8b6b6d5fe32f21a42a2a00ac7cce7a9c, type: 3}
+  - {fileID: 5728404248119495573, guid: 8b6b6d5fe32f21a42a2a00ac7cce7a9c, type: 3}
+  - {fileID: -205620266705300115, guid: 8b6b6d5fe32f21a42a2a00ac7cce7a9c, type: 3}
+  - {fileID: 914892611379245800, guid: 8b6b6d5fe32f21a42a2a00ac7cce7a9c, type: 3}
+  _frameRate: 12
+  _enableBobbing: 1
+  _bobAmplitude: 0.05
+  _bobFrequency: 3.2

@@ -14,6 +14,9 @@ namespace Platformer2D.Player.Components
         private Animator _animator;
         private PlayerMovement _movement;
         private PlayerCombat _combat;
+        private float _hurtTimer;
+
+        public bool IsHurt => _hurtTimer > 0f;
 
         // Animator Hashes
         private static readonly int SpeedHash = Animator.StringToHash("Speed");
@@ -60,6 +63,12 @@ namespace Platformer2D.Player.Components
         public void ProcessUpdate(bool isDead)
         {
             if (_animator == null || isDead) return;
+
+            if (_hurtTimer > 0f)
+            {
+                _hurtTimer -= Time.deltaTime;
+                return;
+            }
 
             bool isAttacking = _combat != null && _combat.IsAttacking;
             _animator.SetBool(IsAttackingHash, isAttacking);
@@ -110,22 +119,38 @@ namespace Platformer2D.Player.Components
             if (_animator != null) _animator.SetTrigger(ThrowHash);
         }
 
-        public void TriggerHurt()
+        public void TriggerHurt(float duration = 0.35f)
         {
-            if (_animator != null) _animator.SetTrigger(HurtHash);
+            _hurtTimer = duration;
+            if (_animator != null)
+            {
+                _animator.speed = 1f;
+                _animator.ResetTrigger(AttackHash);
+                _animator.ResetTrigger(Attack2Hash);
+                _animator.ResetTrigger(WalkAttackHash);
+                _animator.ResetTrigger(ThrowHash);
+                _animator.SetTrigger(HurtHash);
+                _animator.Play("Pink_Monster_Hurt", 0, 0f);
+            }
         }
 
         public void SetDead(bool isDead)
         {
+            _hurtTimer = 0f;
             if (_animator != null)
             {
                 _animator.speed = 1f;
                 _animator.SetBool(IsDeadHash, isDead);
-                if (!isDead)
+                _animator.SetBool(IsClimbingHash, false);
+                _animator.SetBool(IsPushingHash, false);
+                _animator.SetBool(IsAttackingHash, false);
+
+                if (isDead)
                 {
-                    _animator.SetBool(IsClimbingHash, false);
-                    _animator.SetBool(IsPushingHash, false);
-                    _animator.SetBool(IsAttackingHash, false);
+                    _animator.Play("Pink_Monster_Death", 0, 0f);
+                }
+                else
+                {
                     _animator.Play("Pink_Monster_Idle", 0, 0f);
                 }
             }

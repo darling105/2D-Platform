@@ -155,7 +155,7 @@ namespace Platformer2D.Combat
 
             if (_isPlayer)
             {
-                EventBus.Publish(new PlayerDiedEvent(transform.position));
+                StartCoroutine(PlayerDeathDelayRoutine());
             }
             else
             {
@@ -171,6 +171,12 @@ namespace Platformer2D.Combat
 
                 Destroy(gameObject, 1.2f);
             }
+        }
+
+        private IEnumerator PlayerDeathDelayRoutine()
+        {
+            yield return new WaitForSeconds(1.15f);
+            EventBus.Publish(new PlayerDiedEvent(transform.position));
         }
 
         private IEnumerator InvulnerabilityRoutine(float duration)

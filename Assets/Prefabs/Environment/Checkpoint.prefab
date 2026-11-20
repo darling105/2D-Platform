@@ -83,7 +83,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: -1
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 9203530336585976052, guid: 01e364a1570a47c4cb8de916bd428f6b, type: 3}
+  m_Sprite: {fileID: 1805158079502305607, guid: 01e364a1570a47c4cb8de916bd428f6b, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -138,7 +138,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1.5}
+  m_Size: {x: 0.85, y: 0.9375}
   m_EdgeRadius: 0
 --- !u!114 &6659631956455265786
 MonoBehaviour:
@@ -152,6 +152,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b9891be50e3572b43951a8948555a2b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Platformer2D.Environment.Interactive.Checkpoint
-  _activeSprite: {fileID: 0}
-  _activeColor: {r: 0.3, g: 1, b: 0.4, a: 1}
+  _inactiveColor: {r: 0.65, g: 0.65, b: 0.72, a: 0.92}
+  _waveFrames:
+  - {fileID: 1805158079502305607, guid: 01e364a1570a47c4cb8de916bd428f6b, type: 3}
+  - {fileID: -477789389410734736, guid: 01e364a1570a47c4cb8de916bd428f6b, type: 3}
+  - {fileID: -8119871676797884261, guid: 01e364a1570a47c4cb8de916bd428f6b, type: 3}
+  - {fileID: 5006722515616286978, guid: 01e364a1570a47c4cb8de916bd428f6b, type: 3}
+  - {fileID: -1620801062248390355, guid: 01e364a1570a47c4cb8de916bd428f6b, type: 3}
+  - {fileID: -6821687374815711783, guid: 01e364a1570a47c4cb8de916bd428f6b, type: 3}
+  - {fileID: 9203530336585976052, guid: 01e364a1570a47c4cb8de916bd428f6b, type: 3}
+  - {fileID: -5498009112885732322, guid: 01e364a1570a47c4cb8de916bd428f6b, type: 3}
+  _waveFrameRate: 12
+  _activateVfxFrames:
+  - {fileID: 5813457823378813359, guid: 6c931c9ab896c00439aa29e3a272a12a, type: 3}
+  - {fileID: -7538064358652802728, guid: 6c931c9ab896c00439aa29e3a272a12a, type: 3}
+  - {fileID: 9368464005241832, guid: 6c931c9ab896c00439aa29e3a272a12a, type: 3}
+  - {fileID: 9102747231365233860, guid: 6c931c9ab896c00439aa29e3a272a12a, type: 3}
+  - {fileID: 352656143915786737, guid: 6c931c9ab896c00439aa29e3a272a12a, type: 3}
+  - {fileID: -4272358059254029691, guid: 6c931c9ab896c00439aa29e3a272a12a, type: 3}
   _respawnOffset: {x: 0, y: 0.5}

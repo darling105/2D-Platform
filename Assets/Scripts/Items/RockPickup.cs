@@ -27,11 +27,19 @@ namespace Platformer2D.Items
         private bool _isCollected;
         private float _fullNoticeTimer;
 
+        public int RockAmount => _rockAmount;
+
         private void Awake()
         {
             Collider2D col = GetComponent<Collider2D>();
             col.isTrigger = true;
             _startPos = transform.position;
+        }
+
+        public void ResetStartPosition(Vector3 newPos)
+        {
+            _startPos = newPos;
+            transform.position = newPos;
         }
 
         private void Update()
@@ -70,6 +78,24 @@ namespace Platformer2D.Items
         }
 
         /// <summary>
+        /// Thu nhận trực tiếp vật phẩm (dùng khi vật phẩm bay từ rương ném thẳng vào người chơi).
+        /// </summary>
+        public bool CollectDirectly(PlayerCombat combat)
+        {
+            if (_isCollected || combat == null) return false;
+
+            if (combat.AddRocks(_rockAmount))
+            {
+                _isCollected = true;
+                EventBus.Publish(new PlaySoundEvent(_soundId, SoundType.SFX, transform.position));
+                EventBus.Publish(new HudToastMessageEvent($"+{_rockAmount} ROCKS", new Color(0.45f, 0.88f, 1f, 1f)));
+                Destroy(gameObject);
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Tạo nhanh vật phẩm nhặt Đá lúc runtime khi đập vỡ thùng chưa gắn sẵn Prefab rơi đồ.
         /// </summary>
         public static GameObject SpawnRuntimePickup(Vector3 position, int rockAmount = 3)
@@ -94,7 +120,7 @@ namespace Platformer2D.Items
             }
 
             CircleCollider2D col = obj.AddComponent<CircleCollider2D>();
-            col.radius = 0.35f;
+            col.radius = 0.24f;
             col.isTrigger = true;
 
             RockPickup pickup = obj.AddComponent<RockPickup>();
