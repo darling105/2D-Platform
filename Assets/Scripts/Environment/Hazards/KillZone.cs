@@ -20,14 +20,50 @@ namespace Platformer2D.Environment.Hazards
 
         private void OnTriggerEnter2D(Collider2D other)
         {
-            if (other.CompareTag("Player"))
+            ProcessKill(other.gameObject);
+        }
+
+        private void OnTriggerStay2D(Collider2D other)
+        {
+            ProcessKill(other.gameObject);
+        }
+
+        private void ProcessKill(GameObject target)
+        {
+            if (target == null) return;
+
+            // Xử lý Người chơi: Tuyệt đối không để bất kỳ chiêu thức nào (Kể cả Khiên Skill 3 hay Dash) chặn chết rơi vực
+            if (target.CompareTag("Player") || target.name.Contains("Player") || target.name.Contains("Pink_Monster"))
             {
-                IDamageable damageable = other.GetComponent<IDamageable>();
+                var player = target.GetComponent<Platformer2D.Player.Controllers.PlayerController>();
+                if (player != null && !player.IsDead)
+                {
+                    DamageData lethalDamage = new DamageData(9999, gameObject, target.transform.position, Vector2.zero, DamageType.FallDamage);
+                    player.TakeDamage(lethalDamage);
+                    if (!player.IsDead)
+                    {
+                        player.ForceKill();
+                    }
+                    EventBus.Publish(new PlaySoundEvent("FallDeath", SoundType.SFX, target.transform.position));
+                    return;
+                }
+
+                IDamageable damageable = target.GetComponent<IDamageable>();
                 if (damageable != null && !damageable.IsDead)
                 {
-                    DamageData lethalDamage = new DamageData(9999, gameObject, Vector2.zero, Vector2.zero, DamageType.FallDamage);
+                    DamageData lethalDamage = new DamageData(9999, gameObject, target.transform.position, Vector2.zero, DamageType.FallDamage);
                     damageable.TakeDamage(lethalDamage);
-                    EventBus.Publish(new PlaySoundEvent("FallDeath", SoundType.SFX, other.transform.position));
+                    EventBus.Publish(new PlaySoundEvent("FallDeath", SoundType.SFX, target.transform.position));
+                }
+            }
+            else
+            {
+                // Tiêu diệt quái vật hoặc dọn sạch vật thể bị rơi xuống vực sâu
+                IDamageable enemyDamageable = target.GetComponent<IDamageable>();
+                if (enemyDamageable != null && !enemyDamageable.IsDead)
+                {
+                    DamageData lethalDamage = new DamageData(9999, gameObject, target.transform.position, Vector2.zero, DamageType.FallDamage);
+                    enemyDamageable.TakeDamage(lethalDamage);
                 }
             }
         }

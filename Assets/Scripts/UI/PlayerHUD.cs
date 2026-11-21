@@ -22,6 +22,15 @@ namespace Platformer2D.UI
         [SerializeField] private Image _healthBarFill;
         [SerializeField] private Text _healthText;
 
+        [Header("Stamina UI")]
+        [SerializeField] private Image _staminaBarFill;
+        [SerializeField] private Text _staminaText;
+
+        [Header("Level & EXP UI")]
+        [SerializeField] private Text _levelBadgeText;
+        [SerializeField] private Image _expBarFill;
+        [SerializeField] private Text _expText;
+
         [Header("Score, Ammo & Top Controls")]
         [SerializeField] private Text _rockText;
         [SerializeField] private Text _scoreText;
@@ -84,6 +93,13 @@ namespace Platformer2D.UI
                 }
             }
 
+            EnsureStatusBarsExist();
+            if (_skillTreePanel == null)
+            {
+                _skillTreePanel = GetComponent<SkillTreePanelUI>()
+                               ?? GetComponentInChildren<SkillTreePanelUI>(true)
+                               ?? FindAnyObjectByType<SkillTreePanelUI>(FindObjectsInactive.Include);
+            }
             BindButtons();
             HideAllOverlays();
             if (_toastContainer != null)
@@ -100,6 +116,9 @@ namespace Platformer2D.UI
         private void OnEnable()
         {
             EventBus.Subscribe<PlayerHealthChangedEvent>(OnHealthChanged);
+            EventBus.Subscribe<PlayerStaminaChangedEvent>(OnStaminaChanged);
+            EventBus.Subscribe<PlayerExpChangedEvent>(OnExpChanged);
+            EventBus.Subscribe<PlayerLeveledUpEvent>(OnPlayerLeveledUp);
             EventBus.Subscribe<RockCountChangedEvent>(OnRockCountChanged);
             EventBus.Subscribe<ScoreChangedEvent>(OnScoreChanged);
             EventBus.Subscribe<GameStateChangedEvent>(OnGameStateChanged);
@@ -110,6 +129,9 @@ namespace Platformer2D.UI
         private void OnDisable()
         {
             EventBus.Unsubscribe<PlayerHealthChangedEvent>(OnHealthChanged);
+            EventBus.Unsubscribe<PlayerStaminaChangedEvent>(OnStaminaChanged);
+            EventBus.Unsubscribe<PlayerExpChangedEvent>(OnExpChanged);
+            EventBus.Unsubscribe<PlayerLeveledUpEvent>(OnPlayerLeveledUp);
             EventBus.Unsubscribe<RockCountChangedEvent>(OnRockCountChanged);
             EventBus.Unsubscribe<ScoreChangedEvent>(OnScoreChanged);
             EventBus.Unsubscribe<GameStateChangedEvent>(OnGameStateChanged);
@@ -211,6 +233,13 @@ namespace Platformer2D.UI
                 {
                     ApplyRockUI(combat.CurrentRocks);
                 }
+
+                PlayerProgression prog = player.GetComponent<PlayerProgression>();
+                if (prog != null)
+                {
+                    ApplyStaminaUI(prog.CurrentStamina, prog.MaxStamina);
+                    ApplyExpUI(prog.CurrentLevel, prog.CurrentExp, prog.ExpToNextLevel);
+                }
             }
 
             int score = GameManager.HasInstance ? GameManager.Instance.CurrentScore : 0;
@@ -219,6 +248,186 @@ namespace Platformer2D.UI
             if (GameManager.HasInstance)
             {
                 ApplyGameStateUI(GameManager.Instance.CurrentState);
+            }
+        }
+
+        private void EnsureStatusBarsExist()
+        {
+            if (_staminaBarFill != null && _expBarFill != null && _levelBadgeText != null) return;
+
+            Transform topLeft = transform.Find("TopLeft_Status");
+            if (topLeft == null)
+            {
+                topLeft = transform.Find("GameplayUICanvas/TopLeft_Status");
+            }
+            if (topLeft == null) return;
+
+            Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+
+            // 1. Stamina Bar
+            if (_staminaBarFill == null)
+            {
+                Transform stamBg = topLeft.Find("StaminaBar_Bg");
+                if (stamBg == null)
+                {
+                    GameObject staminaObj = new GameObject("StaminaBar_Bg");
+                    staminaObj.transform.SetParent(topLeft, false);
+                    Image bg = staminaObj.AddComponent<Image>();
+                    bg.color = new Color(0.12f, 0.16f, 0.22f, 0.95f);
+                    RectTransform rt = staminaObj.GetComponent<RectTransform>();
+                    rt.anchorMin = Vector2.zero;
+                    rt.anchorMax = Vector2.zero;
+                    rt.pivot = Vector2.zero;
+                    rt.sizeDelta = new Vector2(360f, 22f);
+                    rt.anchoredPosition = new Vector2(135f, 38f);
+
+                    GameObject fillObj = new GameObject("StaminaBar_Fill");
+                    fillObj.transform.SetParent(staminaObj.transform, false);
+                    Image fill = fillObj.AddComponent<Image>();
+                    fill.color = new Color(0.35f, 0.92f, 0.52f, 1f);
+                    fill.type = Image.Type.Filled;
+                    fill.fillMethod = Image.FillMethod.Horizontal;
+                    RectTransform fillRt = fillObj.GetComponent<RectTransform>();
+                    fillRt.anchorMin = Vector2.zero;
+                    fillRt.anchorMax = Vector2.one;
+                    fillRt.offsetMin = Vector2.zero;
+                    fillRt.offsetMax = Vector2.zero;
+                    _staminaBarFill = fill;
+
+                    GameObject txtObj = new GameObject("StaminaText");
+                    txtObj.transform.SetParent(staminaObj.transform, false);
+                    Text txt = txtObj.AddComponent<Text>();
+                    txt.text = "100/100";
+                    txt.font = font;
+                    txt.fontSize = 14;
+                    txt.color = Color.white;
+                    txt.alignment = TextAnchor.MiddleCenter;
+                    RectTransform txtRt = txtObj.GetComponent<RectTransform>();
+                    txtRt.anchorMin = Vector2.zero;
+                    txtRt.anchorMax = Vector2.one;
+                    txtRt.offsetMin = Vector2.zero;
+                    txtRt.offsetMax = Vector2.zero;
+                    _staminaText = txt;
+                }
+                else
+                {
+                    _staminaBarFill = stamBg.Find("StaminaBar_Fill")?.GetComponent<Image>();
+                    _staminaText = stamBg.Find("StaminaText")?.GetComponent<Text>();
+                }
+            }
+
+            // 2. EXP Bar
+            if (_expBarFill == null)
+            {
+                Transform expBg = topLeft.Find("ExpBar_Bg");
+                if (expBg == null)
+                {
+                    GameObject expObj = new GameObject("ExpBar_Bg");
+                    expObj.transform.SetParent(topLeft, false);
+                    Image bg = expObj.AddComponent<Image>();
+                    bg.color = new Color(0.10f, 0.12f, 0.18f, 0.95f);
+                    RectTransform rt = expObj.GetComponent<RectTransform>();
+                    rt.anchorMin = Vector2.zero;
+                    rt.anchorMax = Vector2.zero;
+                    rt.pivot = Vector2.zero;
+                    rt.sizeDelta = new Vector2(360f, 18f);
+                    rt.anchoredPosition = new Vector2(135f, 14f);
+
+                    GameObject fillObj = new GameObject("ExpBar_Fill");
+                    fillObj.transform.SetParent(expObj.transform, false);
+                    Image fill = fillObj.AddComponent<Image>();
+                    fill.color = new Color(0.42f, 0.82f, 1f, 1f);
+                    fill.type = Image.Type.Filled;
+                    fill.fillMethod = Image.FillMethod.Horizontal;
+                    RectTransform fillRt = fillObj.GetComponent<RectTransform>();
+                    fillRt.anchorMin = Vector2.zero;
+                    fillRt.anchorMax = Vector2.one;
+                    fillRt.offsetMin = Vector2.zero;
+                    fillRt.offsetMax = Vector2.zero;
+                    _expBarFill = fill;
+
+                    GameObject txtObj = new GameObject("ExpText");
+                    txtObj.transform.SetParent(expObj.transform, false);
+                    Text txt = txtObj.AddComponent<Text>();
+                    txt.text = "EXP 0/100";
+                    txt.font = font;
+                    txt.fontSize = 13;
+                    txt.color = Color.white;
+                    txt.alignment = TextAnchor.MiddleCenter;
+                    RectTransform txtRt = txtObj.GetComponent<RectTransform>();
+                    txtRt.anchorMin = Vector2.zero;
+                    txtRt.anchorMax = Vector2.one;
+                    txtRt.offsetMin = Vector2.zero;
+                    txtRt.offsetMax = Vector2.zero;
+                    _expText = txt;
+                }
+                else
+                {
+                    _expBarFill = expBg.Find("ExpBar_Fill")?.GetComponent<Image>();
+                    _expText = expBg.Find("ExpText")?.GetComponent<Text>();
+                }
+            }
+
+            // 3. Level Badge
+            if (_levelBadgeText == null)
+            {
+                Transform badgeTr = topLeft.Find("Portrait_Frame/LevelBadge/LevelBadgeText");
+                if (badgeTr != null)
+                {
+                    _levelBadgeText = badgeTr.GetComponent<Text>();
+                }
+            }
+        }
+
+        private void OnStaminaChanged(PlayerStaminaChangedEvent evt)
+        {
+            ApplyStaminaUI(evt.CurrentStamina, evt.MaxStamina);
+        }
+
+        private void ApplyStaminaUI(float currentStamina, float maxStamina)
+        {
+            float max = Mathf.Max(1f, maxStamina);
+            float current = Mathf.Clamp(currentStamina, 0f, max);
+
+            if (_staminaBarFill != null)
+            {
+                _staminaBarFill.fillAmount = current / max;
+            }
+
+            if (_staminaText != null)
+            {
+                _staminaText.text = $"{Mathf.CeilToInt(current)}/{Mathf.CeilToInt(max)}";
+            }
+        }
+
+        private void OnExpChanged(PlayerExpChangedEvent evt)
+        {
+            ApplyExpUI(evt.CurrentLevel, evt.CurrentExp, evt.RequiredExp);
+        }
+
+        private void OnPlayerLeveledUp(PlayerLeveledUpEvent evt)
+        {
+            ApplyExpUI(evt.NewLevel, 0, PlayerProgression.GetRequiredExpForLevel(evt.NewLevel));
+        }
+
+        private void ApplyExpUI(int level, int currentExp, int requiredExp)
+        {
+            if (_levelBadgeText != null)
+            {
+                _levelBadgeText.text = $"Lv.{Mathf.Max(1, level)}";
+            }
+
+            int req = Mathf.Max(1, requiredExp);
+            int exp = Mathf.Clamp(currentExp, 0, req);
+
+            if (_expBarFill != null)
+            {
+                _expBarFill.fillAmount = (float)exp / req;
+            }
+
+            if (_expText != null)
+            {
+                _expText.text = $"EXP {exp}/{req}";
             }
         }
 
@@ -402,6 +611,12 @@ namespace Platformer2D.UI
 
         private void ToggleSkillTree()
         {
+            if (_skillTreePanel == null)
+            {
+                _skillTreePanel = GetComponent<SkillTreePanelUI>()
+                               ?? GetComponentInChildren<SkillTreePanelUI>(true)
+                               ?? FindAnyObjectByType<SkillTreePanelUI>(FindObjectsInactive.Include);
+            }
             if (_skillTreePanel == null) return;
 
             if (_skillTreePanel.IsOpen)

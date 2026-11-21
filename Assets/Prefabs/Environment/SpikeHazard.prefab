@@ -155,3 +155,4 @@ MonoBehaviour:
   _damage: 1
   _instantKill: 0
   _knockbackForce: {x: 4, y: 7}
+  _damagePlayerOnly: 1

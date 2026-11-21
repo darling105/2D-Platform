@@ -23,9 +23,9 @@ namespace Platformer2D.Combat
 
         [Header("Knockback Settings")]
         [Tooltip("Độ mạnh của lực đẩy lùi theo phương ngang")]
-        [SerializeField] private float _knockbackHorizontal = 6f;
-        [Tooltip("Độ mạnh của lực đẩy lùi hất tung lên trên")]
-        [SerializeField] private float _knockbackVertical = 4f;
+        [SerializeField] private float _knockbackHorizontal = 5.0f;
+        [Tooltip("Độ mạnh của lực đẩy lùi hất tung lên trên (để giá trị nhỏ 0.8 - 1.2f để quái không bị hất bổng lên trời)")]
+        [SerializeField] private float _knockbackVertical = 1.0f;
 
         [Header("Target Filtering")]
         [Tooltip("Tag của mục tiêu bị nhận sát thương (để trống nếu gây sát thương lên mọi đối tượng trừ chủ sở hữu)")]
@@ -35,7 +35,7 @@ namespace Platformer2D.Combat
 
         [Header("Impact Feedback")]
         [SerializeField] private bool _shakeCameraOnHit = true;
-        [SerializeField] private float _shakeIntensity = 0.2f;
+        [SerializeField] private float _shakeIntensity = 0.045f;
         [SerializeField] private GameObject _hitVfxPrefab;
         [SerializeField] private string _hitSoundId = "Hit";
 
@@ -44,6 +44,12 @@ namespace Platformer2D.Combat
         private int _swingDamageOverride = -1;
         private float _swingKnockbackScale = 1f;
         private float _swingShakeScale = 1f;
+
+        public int DamageAmount
+        {
+            get => _damageAmount;
+            set => _damageAmount = value;
+        }
 
         private void Awake()
         {
@@ -135,10 +141,10 @@ namespace Platformer2D.Combat
 
                 damageable.TakeDamage(data);
 
-                // Feedback: Rung màn hình
+                // Feedback: Rung màn hình nhẹ nhàng, tinh tế
                 if (_shakeCameraOnHit && CameraFollow2D.Instance != null)
                 {
-                    CameraFollow2D.Instance.Shake(0.12f, _shakeIntensity * shakeScale);
+                    CameraFollow2D.Instance.Shake(0.08f, _shakeIntensity * shakeScale);
                 }
 
                 // Feedback: Âm thanh qua EventBus

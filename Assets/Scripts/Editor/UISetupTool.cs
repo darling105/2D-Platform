@@ -133,6 +133,36 @@ namespace Platformer2D.EditorTools
         }
 
         /// <summary>
+        /// Dựng lại 2 Prefab UI và cập nhật vào cả 3 Scenes mà không mở Dialog chặn luồng.
+        /// </summary>
+        public static void RebuildPrefabsAndScenesHeadless()
+        {
+            EnsureFolder("Assets/Prefabs");
+            EnsureFolder("Assets/Prefabs/UI");
+            EnsureCrispSkillAndUIAssets();
+
+            Font pixelFont = LoadPixelFont();
+            GameObject mainMenuPrefab = BuildMainMenuPrefab(pixelFont);
+            GameObject gameplayHudPrefab = BuildGameplayHUDPrefab(pixelFont);
+
+            if (File.Exists(SceneNames.MainMenuPath))
+            {
+                InjectUIIntoScene(SceneNames.MainMenuPath, mainMenuPrefab, "MainMenu_Canvas_Root");
+            }
+            if (File.Exists(SceneNames.Level01Path))
+            {
+                InjectUIIntoScene(SceneNames.Level01Path, gameplayHudPrefab, "Gameplay_HUD_Root");
+            }
+            if (File.Exists(SceneNames.MechanicsTestPath))
+            {
+                InjectUIIntoScene(SceneNames.MechanicsTestPath, gameplayHudPrefab, "TestHUD_Canvas_Root");
+            }
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
+
+        /// <summary>
         /// Ép chuẩn Point Filter (no filter), Uncompressed & tắt Mipmap cho toàn bộ ảnh Skill/UI/Player,
         /// đồng thời chuyển Font pixel sang HintedRaster để không bị mờ hay nhòe cạnh ở màn Full HD.
         /// </summary>
@@ -353,27 +383,27 @@ namespace Platformer2D.EditorTools
             portraitImgRt.sizeDelta = new Vector2(96f, 96f);
 
             // Nhãn tên + Tim + Số HP
-            Text nameLabel = CreatePixelText(topLeft.transform, "CharacterName", "PINK MONSTER", 21, ColTextWhite, font, TextAnchor.MiddleLeft);
+            Text nameLabel = CreatePixelText(topLeft.transform, "CharacterName", "PINK MONSTER", 20, ColTextWhite, font, TextAnchor.MiddleLeft);
             nameLabel.rectTransform.anchorMin = new Vector2(0f, 1f);
             nameLabel.rectTransform.anchorMax = new Vector2(0f, 1f);
             nameLabel.rectTransform.pivot = new Vector2(0f, 1f);
-            nameLabel.rectTransform.sizeDelta = new Vector2(248f, 34f);
-            nameLabel.rectTransform.anchoredPosition = new Vector2(135f, -15f);
+            nameLabel.rectTransform.sizeDelta = new Vector2(248f, 30f);
+            nameLabel.rectTransform.anchoredPosition = new Vector2(135f, -10f);
 
-            Image heartIcon = CreateIconImage(topLeft.transform, "HeartIcon", LoadFirstSprite(IconHeartPath), ColRed, new Vector2(28f, 28f));
+            Image heartIcon = CreateIconImage(topLeft.transform, "HeartIcon", LoadFirstSprite(IconHeartPath), ColRed, new Vector2(24f, 24f));
             heartIcon.rectTransform.anchorMin = new Vector2(0f, 1f);
             heartIcon.rectTransform.anchorMax = new Vector2(0f, 1f);
             heartIcon.rectTransform.pivot = new Vector2(0f, 1f);
-            heartIcon.rectTransform.anchoredPosition = new Vector2(393f, -18f);
+            heartIcon.rectTransform.anchoredPosition = new Vector2(393f, -14f);
 
-            Text hpText = CreatePixelText(topLeft.transform, "HealthText", "3/3", 24, ColTextWhite, font, TextAnchor.MiddleLeft);
+            Text hpText = CreatePixelText(topLeft.transform, "HealthText", "3/3", 22, ColTextWhite, font, TextAnchor.MiddleLeft);
             hpText.rectTransform.anchorMin = new Vector2(0f, 1f);
             hpText.rectTransform.anchorMax = new Vector2(0f, 1f);
             hpText.rectTransform.pivot = new Vector2(0f, 1f);
-            hpText.rectTransform.sizeDelta = new Vector2(96f, 34f);
-            hpText.rectTransform.anchoredPosition = new Vector2(428f, -15f);
+            hpText.rectTransform.sizeDelta = new Vector2(96f, 30f);
+            hpText.rectTransform.anchoredPosition = new Vector2(424f, -11f);
 
-            // Thanh máu 96x12 (4x -> 384x48, hoặc 360x45 vừa khung)
+            // 1. Thanh máu (HP Bar) 360x32
             GameObject healthBarBgObj = new GameObject("HealthBar_Bg");
             healthBarBgObj.transform.SetParent(topLeft.transform, false);
             Image healthBgImg = healthBarBgObj.AddComponent<Image>();
@@ -383,8 +413,8 @@ namespace Platformer2D.EditorTools
             hbBgRt.anchorMin = new Vector2(0f, 0f);
             hbBgRt.anchorMax = new Vector2(0f, 0f);
             hbBgRt.pivot = new Vector2(0f, 0f);
-            hbBgRt.sizeDelta = new Vector2(360f, 45f);
-            hbBgRt.anchoredPosition = new Vector2(135f, 18f);
+            hbBgRt.sizeDelta = new Vector2(360f, 32f);
+            hbBgRt.anchoredPosition = new Vector2(135f, 66f);
 
             GameObject healthFillObj = new GameObject("HealthBar_Fill");
             healthFillObj.transform.SetParent(healthBarBgObj.transform, false);
@@ -396,6 +426,73 @@ namespace Platformer2D.EditorTools
             healthFillImg.fillAmount = 1f;
             healthFillImg.raycastTarget = false;
             StretchFull(healthFillImg.rectTransform);
+
+            // 2. Thanh Thể Lực (Stamina Bar) 360x22 (Màu xanh Emerald)
+            GameObject staminaBarBgObj = new GameObject("StaminaBar_Bg");
+            staminaBarBgObj.transform.SetParent(topLeft.transform, false);
+            Image staminaBgImg = staminaBarBgObj.AddComponent<Image>();
+            staminaBgImg.sprite = LoadFirstSprite(HealthEmptyPath);
+            staminaBgImg.color = new Color(0.18f, 0.22f, 0.28f, 0.95f);
+            staminaBgImg.raycastTarget = false;
+            RectTransform stamBgRt = staminaBarBgObj.GetComponent<RectTransform>();
+            stamBgRt.anchorMin = new Vector2(0f, 0f);
+            stamBgRt.anchorMax = new Vector2(0f, 0f);
+            stamBgRt.pivot = new Vector2(0f, 0f);
+            stamBgRt.sizeDelta = new Vector2(360f, 24f);
+            stamBgRt.anchoredPosition = new Vector2(135f, 38f);
+
+            GameObject staminaFillObj = new GameObject("StaminaBar_Fill");
+            staminaFillObj.transform.SetParent(staminaBarBgObj.transform, false);
+            Image staminaFillImg = staminaFillObj.AddComponent<Image>();
+            staminaFillImg.sprite = LoadFirstSprite(SquareBarPath);
+            staminaFillImg.color = ColGreen;
+            staminaFillImg.type = Image.Type.Filled;
+            staminaFillImg.fillMethod = Image.FillMethod.Horizontal;
+            staminaFillImg.fillOrigin = (int)Image.OriginHorizontal.Left;
+            staminaFillImg.fillAmount = 1f;
+            staminaFillImg.raycastTarget = false;
+            StretchFull(staminaFillImg.rectTransform);
+
+            Text staminaText = CreatePixelText(staminaBarBgObj.transform, "StaminaText", "100/100", 14, ColTextWhite, font, TextAnchor.MiddleCenter);
+            StretchFull(staminaText.rectTransform);
+
+            // 3. Thanh Kinh Nghiệm (EXP Bar) 360x18 (Màu Cyan)
+            GameObject expBarBgObj = new GameObject("ExpBar_Bg");
+            expBarBgObj.transform.SetParent(topLeft.transform, false);
+            Image expBgImg = expBarBgObj.AddComponent<Image>();
+            expBgImg.sprite = LoadFirstSprite(HealthEmptyPath);
+            expBgImg.color = new Color(0.14f, 0.16f, 0.24f, 0.95f);
+            expBgImg.raycastTarget = false;
+            RectTransform expBgRt = expBarBgObj.GetComponent<RectTransform>();
+            expBgRt.anchorMin = new Vector2(0f, 0f);
+            expBgRt.anchorMax = new Vector2(0f, 0f);
+            expBgRt.pivot = new Vector2(0f, 0f);
+            expBgRt.sizeDelta = new Vector2(360f, 18f);
+            expBgRt.anchoredPosition = new Vector2(135f, 16f);
+
+            GameObject expFillObj = new GameObject("ExpBar_Fill");
+            expFillObj.transform.SetParent(expBarBgObj.transform, false);
+            Image expFillImg = expFillObj.AddComponent<Image>();
+            expFillImg.sprite = LoadFirstSprite(SquareBarPath);
+            expFillImg.color = ColCyan;
+            expFillImg.type = Image.Type.Filled;
+            expFillImg.fillMethod = Image.FillMethod.Horizontal;
+            expFillImg.fillOrigin = (int)Image.OriginHorizontal.Left;
+            expFillImg.fillAmount = 0f;
+            expFillImg.raycastTarget = false;
+            StretchFull(expFillImg.rectTransform);
+
+            Text expText = CreatePixelText(expBarBgObj.transform, "ExpText", "EXP 0/100", 13, ColTextWhite, font, TextAnchor.MiddleCenter);
+            StretchFull(expText.rectTransform);
+
+            // 4. Huy hiệu Cấp độ (Level Badge) đè lên góc dưới chân dung
+            RectTransform lvBadgeRt = CreateBorderedBox(portraitFrame, "LevelBadge", new Vector2(76f, 26f), ColPanelDark, ColGold);
+            lvBadgeRt.anchorMin = new Vector2(0.5f, 0f);
+            lvBadgeRt.anchorMax = new Vector2(0.5f, 0f);
+            lvBadgeRt.pivot = new Vector2(0.5f, 0.5f);
+            lvBadgeRt.anchoredPosition = new Vector2(0f, 0f);
+            Text lvBadgeTxt = CreatePixelText(lvBadgeRt, "LevelBadgeText", "Lv.1", 16, ColGold, font, TextAnchor.MiddleCenter);
+            StretchFull(lvBadgeTxt.rectTransform);
 
             // === B. TOP-RIGHT: Rock Ammo, Coins Counter, Skills & Pause Button ===
             GameObject topRight = new GameObject("TopRight_Controls");
@@ -597,6 +694,11 @@ namespace Platformer2D.EditorTools
             SerializedObject so = new SerializedObject(hud);
             SetObject(so, "_healthBarFill", healthFillImg);
             SetObject(so, "_healthText", hpText);
+            SetObject(so, "_staminaBarFill", staminaFillImg);
+            SetObject(so, "_staminaText", staminaText);
+            SetObject(so, "_levelBadgeText", lvBadgeTxt);
+            SetObject(so, "_expBarFill", expFillImg);
+            SetObject(so, "_expText", expText);
             SetObject(so, "_rockText", rockText);
             SetObject(so, "_scoreText", scoreText);
             SetObject(so, "_skillsButton", skillsBtn);
@@ -831,6 +933,7 @@ namespace Platformer2D.EditorTools
             SetObjectArray(skillSo, "_rowStatTexts", rowStatTexts);
             SetObjectArray(skillSo, "_rowUpgradeButtons", rowBtns);
             SetObjectArray(skillSo, "_rowUpgradeButtonTexts", rowBtnTexts);
+            SetObject(skillSo, "_iconFrameSprite", LoadFirstSprite("Assets/GameAssets/UI/1 Frames/Portrait_frame.png"));
             skillSo.ApplyModifiedPropertiesWithoutUndo();
         }
 

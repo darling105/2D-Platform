@@ -58,6 +58,11 @@ namespace Platformer2D.Combat
             transform.rotation = Quaternion.Euler(0f, 0f, angle);
         }
 
+        public void SetDamage(int dmg)
+        {
+            _damage = Mathf.Max(1, dmg);
+        }
+
         private void OnTriggerEnter2D(Collider2D other)
         {
             // Bỏ qua nếu chạm chính người ném hoặc collider con của người ném (hitbox, v.v.)

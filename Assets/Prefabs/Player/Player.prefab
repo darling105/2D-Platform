@@ -20,6 +20,7 @@ GameObject:
   - component: {fileID: 7381710959250055579}
   - component: {fileID: 1435454459666263408}
   - component: {fileID: 5638222703208636264}
+  - component: {fileID: 889100223344556677}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -445,3 +446,19 @@ MonoBehaviour:
   _shakeIntensity: 0.01
   _hitVfxPrefab: {fileID: 0}
   _hitSoundId: Hit
+--- !u!114 &889100223344556677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1990589011641405100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: beb0d70b04b272845b8ea1a9856a3d7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Platformer2D.Player.Components.PlayerProgression
+  _currentStamina: 100
+  _currentLevel: 1
+  _currentExp: 0
+  _availableSkillPoints: 1

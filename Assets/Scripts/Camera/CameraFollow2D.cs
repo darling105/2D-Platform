@@ -113,16 +113,28 @@ namespace Platformer2D.CameraControl
 
         /// <summary>
         /// Kích hoạt rung màn hình khi đánh trúng, trúng đòn hoặc nổ bom.
+        /// Độ mạnh rung lắc được cân bằng mượt mà, tự suy giảm dần (decay) để không gây chóng mặt.
         /// </summary>
-        /// <param name="duration">Thời gian rung (giây, thường 0.1 - 0.25s)</param>
-        /// <param name="magnitude">Độ mạnh rung lắc (thường 0.1 - 0.3)</param>
-        public void Shake(float duration = 0.15f, float magnitude = 0.2f)
+        /// <param name="duration">Thời gian rung (giây, thường 0.06 - 0.12s)</param>
+        /// <param name="magnitude">Độ mạnh rung lắc (thường 0.03 - 0.08)</param>
+        public void Shake(float duration = 0.09f, float magnitude = 0.05f)
         {
             if (_shakeCoroutine != null)
             {
                 StopCoroutine(_shakeCoroutine);
             }
-            _shakeCoroutine = StartCoroutine(ShakeRoutine(duration, magnitude));
+            // Giới hạn biên độ rung tối đa không vượt quá 0.08f trong không gian 2D để camera luôn êm ái
+            float clampedMagnitude = Mathf.Clamp(magnitude, 0.015f, 0.08f);
+            float clampedDuration = Mathf.Clamp(duration, 0.05f, 0.16f);
+            _shakeCoroutine = StartCoroutine(ShakeRoutine(clampedDuration, clampedMagnitude));
+        }
+
+        public static void TriggerShake(float duration = 0.09f, float magnitude = 0.05f)
+        {
+            if (Instance != null)
+            {
+                Instance.Shake(duration, magnitude);
+            }
         }
 
         private IEnumerator ShakeRoutine(float duration, float magnitude)
@@ -131,8 +143,10 @@ namespace Platformer2D.CameraControl
 
             while (elapsed < duration)
             {
-                float x = Random.Range(-1f, 1f) * magnitude;
-                float y = Random.Range(-1f, 1f) * magnitude;
+                // Suy giảm độ rung mượt mà từ 1 về 0 (Damper)
+                float damper = 1f - (elapsed / duration);
+                float x = Random.Range(-1f, 1f) * magnitude * damper;
+                float y = Random.Range(-1f, 1f) * magnitude * damper;
 
                 _shakeOffset = new Vector3(x, y, 0f);
 

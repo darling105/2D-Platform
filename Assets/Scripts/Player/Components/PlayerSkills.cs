@@ -122,6 +122,12 @@ namespace Platformer2D.Player.Components
             _movement = GetComponent<PlayerMovement>();
             _playerRenderer = GetComponent<SpriteRenderer>();
             _playerCollider = GetComponent<Collider2D>();
+
+            // Khởi đầu: Chiêu Cầu Lửa (Slot 0) được mở sẵn Cấp 1 để người chơi tấn công phép thuật ngay khi bắt đầu
+            if (_levels[0] == 0)
+            {
+                _levels[0] = 1;
+            }
         }
 
         public void ProcessUpdate()
@@ -255,6 +261,13 @@ namespace Platformer2D.Player.Components
             return true;
         }
 
+        public void SetSkillLevelExplicit(int slot, int level)
+        {
+            if (!IsValidSlot(slot)) return;
+            _levels[slot] = Mathf.Clamp(level, 0, MaxSkillLevel);
+            EventBus.Publish(new SkillStateChangedEvent(slot, _levels[slot]));
+        }
+
         #endregion
 
         #region Skill Casting
@@ -269,7 +282,7 @@ namespace Platformer2D.Player.Components
                 if (_lockedNoticeTimer <= 0f)
                 {
                     _lockedNoticeTimer = 1.0f;
-                    EventBus.Publish(new HudToastMessageEvent("SKILL LOCKED! PRESS [TAB] TO UNLOCK", new Color(1f, 0.78f, 0.25f, 1f)));
+                    EventBus.Publish(new HudToastMessageEvent("CHIÊU CHƯA HỌC! BẤM [TAB] HOẶC NÚT [SKILLS] ĐỂ MỞ CÂY KỸ NĂNG", new Color(1f, 0.84f, 0.28f, 1f)));
                 }
                 return false;
             }

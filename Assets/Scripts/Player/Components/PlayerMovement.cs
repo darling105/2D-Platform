@@ -118,6 +118,7 @@ namespace Platformer2D.Player.Components
         private float _ladderRegrabTimer;
         private float _dashCooldownTimer;
         private float _originalGravityScale;
+        private PlayerProgression _progression;
 
         private float BaseMaxUpwardSpeed => _jumpForce + 2f;
 
@@ -127,6 +128,23 @@ namespace Platformer2D.Player.Components
 
         private float _jumpPadAllowanceTimer = 0f;
         private float _maxAllowedUpwardSpeed;
+
+        private float _speedBuffMultiplier = 1f;
+        private Coroutine _speedBuffCoroutine;
+
+        public void ApplySpeedBuff(float multiplier, float duration)
+        {
+            if (_speedBuffCoroutine != null) StopCoroutine(_speedBuffCoroutine);
+            _speedBuffCoroutine = StartCoroutine(SpeedBuffRoutine(multiplier, duration));
+        }
+
+        private IEnumerator SpeedBuffRoutine(float multiplier, float duration)
+        {
+            _speedBuffMultiplier = multiplier;
+            yield return new WaitForSeconds(duration);
+            _speedBuffMultiplier = 1f;
+            _speedBuffCoroutine = null;
+        }
 
         private float _stepDustTimer;
         private bool _wasGrounded;
@@ -152,6 +170,7 @@ namespace Platformer2D.Player.Components
             _mainCollider = GetComponent<Collider2D>();
             _ghostTrail = GetComponent<GhostTrail>();
             _input = GetComponent<PlayerInputHandler>();
+            _progression = GetComponent<PlayerProgression>();
 
             // Gán PhysicsMaterial2D không ma sát cho Collider và Rigidbody2D để chống dính tường / dính thùng
             if (_mainCollider != null && _mainCollider.sharedMaterial == null)
@@ -381,7 +400,7 @@ namespace Platformer2D.Player.Components
             if (_input == null) return;
 
             Vector2 platformVelocity = _currentMovingPlatform != null ? _currentMovingPlatform.Velocity : Vector2.zero;
-            float currentMoveSpeed = _isPushing ? (_moveSpeed * 0.6f) : _moveSpeed;
+            float currentMoveSpeed = (_isPushing ? (_moveSpeed * 0.6f) : _moveSpeed) * _speedBuffMultiplier;
             float inputX = _input.MoveInput.x;
 
             float targetRelX = inputX * currentMoveSpeed;
@@ -526,6 +545,13 @@ namespace Platformer2D.Player.Components
             // 3. Nhảy 2 lần trên không (Double Jump)
             if (_airJumpsRemaining > 0)
             {
+                if (_progression != null && !_progression.HasStamina(15f))
+                {
+                    // Cạn thể lực, không thể thực hiện Double Jump
+                    return;
+                }
+                _progression?.ConsumeStamina(15f);
+
                 _airJumpsRemaining--;
                 _rb.linearVelocityY = _jumpForce;
                 _coyoteTimer = 0f;
@@ -747,6 +773,12 @@ namespace Platformer2D.Player.Components
         {
             if (_input == null) return;
 
+            if (Mathf.Abs(_input.VerticalInput) > 0.1f)
+            {
+                _progression?.ConsumeStamina(6f * Time.fixedDeltaTime);
+                _progression?.PauseStaminaRegen();
+            }
+
             float verticalVel = _input.VerticalInput * _climbSpeed;
             float halfHeight = _mainCollider != null ? _mainCollider.bounds.extents.y : 0.46f;
             if (_currentLadder != null && verticalVel > 0f && transform.position.y >= _currentLadder.TopY + halfHeight - 0.01f)
@@ -765,8 +797,16 @@ namespace Platformer2D.Player.Components
         {
             if (_input == null) return;
 
+            float dashCost = _progression != null ? _progression.GetDashStaminaCost() : 25f;
             if (_input.DashTriggered && _dashCooldownTimer <= 0f && !_isDashing && !_isClimbing)
             {
+                if (_progression != null && !_progression.HasStamina(dashCost))
+                {
+                    EventBus.Publish(new HudToastMessageEvent("CẠN THỂ LỰC! KHÔNG THỂ LƯỚT", new Color(1f, 0.45f, 0.35f, 1f)));
+                    return;
+                }
+
+                _progression?.ConsumeStamina(dashCost);
                 StartCoroutine(DashRoutine());
             }
         }
@@ -779,7 +819,8 @@ namespace Platformer2D.Player.Components
             float dashDir = (_input != null && _input.MoveInput.x != 0) ? Mathf.Sign(_input.MoveInput.x) : (_isFacingRight ? 1f : -1f);
             SetFacing(dashDir > 0f);
             _rb.gravityScale = 0f;
-            _rb.linearVelocity = new Vector2(dashDir * _dashSpeed, 0f);
+            float actualSpeed = _dashSpeed + (_progression != null ? _progression.GetDashSpeedBonus() : 0f);
+            _rb.linearVelocity = new Vector2(dashDir * actualSpeed, 0f);
 
             if (_ghostTrail != null) _ghostTrail.StartTrail(_dashDuration);
             EventBus.Publish(new PlaySoundEvent("Dash", SoundType.SFX, transform.position));

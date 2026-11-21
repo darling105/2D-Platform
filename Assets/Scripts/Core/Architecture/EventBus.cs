@@ -141,6 +141,68 @@ namespace Platformer2D.Core.Architecture
         }
     }
 
+    public readonly struct PlayerStaminaChangedEvent : IEvent
+    {
+        public readonly float CurrentStamina;
+        public readonly float MaxStamina;
+
+        public PlayerStaminaChangedEvent(float currentStamina, float maxStamina)
+        {
+            CurrentStamina = currentStamina;
+            MaxStamina = maxStamina;
+        }
+    }
+
+    public readonly struct PlayerExpChangedEvent : IEvent
+    {
+        public readonly int CurrentLevel;
+        public readonly int CurrentExp;
+        public readonly int RequiredExp;
+
+        public PlayerExpChangedEvent(int currentLevel, int currentExp, int requiredExp)
+        {
+            CurrentLevel = currentLevel;
+            CurrentExp = currentExp;
+            RequiredExp = requiredExp;
+        }
+    }
+
+    public readonly struct PlayerLeveledUpEvent : IEvent
+    {
+        public readonly int NewLevel;
+        public readonly int AvailableSkillPoints;
+
+        public PlayerLeveledUpEvent(int newLevel, int availableSkillPoints)
+        {
+            NewLevel = newLevel;
+            AvailableSkillPoints = availableSkillPoints;
+        }
+    }
+
+    public readonly struct SkillPointsChangedEvent : IEvent
+    {
+        public readonly int AvailableSkillPoints;
+
+        public SkillPointsChangedEvent(int availableSkillPoints)
+        {
+            AvailableSkillPoints = availableSkillPoints;
+        }
+    }
+
+    public readonly struct EnemyDefeatedEvent : IEvent
+    {
+        public readonly Vector3 Position;
+        public readonly int BaseExp;
+        public readonly int BaseCoins;
+
+        public EnemyDefeatedEvent(Vector3 position, int baseExp, int baseCoins = 0)
+        {
+            Position = position;
+            BaseExp = baseExp;
+            BaseCoins = baseCoins;
+        }
+    }
+
     public readonly struct PlayerDiedEvent : IEvent
     {
         public readonly Vector2 DeathPosition;

@@ -20,6 +20,7 @@ namespace Platformer2D.Player.Controllers
     [RequireComponent(typeof(PlayerMovement))]
     [RequireComponent(typeof(PlayerCombat))]
     [RequireComponent(typeof(PlayerAnimationSync))]
+    [RequireComponent(typeof(PlayerProgression))]
     public class PlayerController : MonoBehaviour, IDamageable, IHealable
     {
         [Header("Health Settings")]
@@ -39,6 +40,7 @@ namespace Platformer2D.Player.Controllers
         private PlayerCombat _combat;
         private PlayerAnimationSync _animSync;
         private PlayerSkills _skills;
+        private PlayerProgression _progression;
 
         private int _currentHealth;
         private bool _isDead;
@@ -56,6 +58,7 @@ namespace Platformer2D.Player.Controllers
         public bool IsAtMaxHealth => _currentHealth >= _maxHealth;
         public bool IsDashing => _movement != null && _movement.IsDashing;
         public PlayerSkills Skills => _skills;
+        public PlayerProgression Progression => _progression;
 
         private void Awake()
         {
@@ -71,6 +74,8 @@ namespace Platformer2D.Player.Controllers
             _animSync = GetComponent<PlayerAnimationSync>();
             _skills = GetComponent<PlayerSkills>();
             if (_skills == null) _skills = gameObject.AddComponent<PlayerSkills>();
+            _progression = GetComponent<PlayerProgression>();
+            if (_progression == null) _progression = gameObject.AddComponent<PlayerProgression>();
 
             _currentHealth = _maxHealth;
 
@@ -89,6 +94,13 @@ namespace Platformer2D.Player.Controllers
         {
             if (_isDead) return;
 
+            // Lưới an toàn chống rơi vô tận: Rơi qua vực sâu đáy màn (Y < -11f)
+            if (transform.position.y < -11f)
+            {
+                ForceKill();
+                return;
+            }
+
             if (_hurtLockTimer > 0f)
             {
                 _hurtLockTimer -= Time.deltaTime;
@@ -99,6 +111,7 @@ namespace Platformer2D.Player.Controllers
             _movement.ProcessUpdate();
             _combat.ProcessUpdate();
             if (_skills != null) _skills.ProcessUpdate();
+            if (_progression != null) _progression.ProcessUpdate();
             _animSync.ProcessUpdate(_isDead);
         }
 
@@ -119,6 +132,11 @@ namespace Platformer2D.Player.Controllers
         public void NotifyJumpPadLaunch(float force)
         {
             if (_movement != null) _movement.NotifyJumpPadLaunch(force);
+        }
+
+        public void ApplySpeedBuff(float multiplier, float duration)
+        {
+            if (_movement != null) _movement.ApplySpeedBuff(multiplier, duration);
         }
 
         public void SetNearLadder(Ladder ladder, bool isNear)
@@ -147,7 +165,16 @@ namespace Platformer2D.Player.Controllers
 
         public void TakeDamage(DamageData damageData)
         {
-            if (_isDead || IsDashing || _isInvulnerable || (_skills != null && _skills.IsShieldActive)) return;
+            // Sát thương rơi vực sâu (FallDamage / Lethal) là ranh giới môi trường, không thể bị chặn bởi Khiên (Skill 3) hay Lướt (Dash)
+            bool isLethalFall = damageData.Type == DamageType.FallDamage || damageData.Amount >= 9999;
+            if (!isLethalFall)
+            {
+                if (_isDead || IsDashing || _isInvulnerable || (_skills != null && _skills.IsShieldActive)) return;
+            }
+            else
+            {
+                if (_isDead) return;
+            }
 
             _currentHealth = Mathf.Max(0, _currentHealth - damageData.Amount);
             EventBus.Publish(new PlayerHealthChangedEvent(_currentHealth, _maxHealth));
@@ -176,6 +203,17 @@ namespace Platformer2D.Player.Controllers
                 EventBus.Publish(new PlaySoundEvent("PlayerHurt", SoundType.SFX, transform.position));
                 StartInvulnerability();
             }
+        }
+
+        /// <summary>
+        /// Buộc chết ngay lập tức (dùng khi rơi khỏi vực sâu / KillZone), giải phóng toàn bộ hiệu ứng khiên và lướt.
+        /// </summary>
+        public void ForceKill()
+        {
+            if (_isDead) return;
+            _currentHealth = 0;
+            EventBus.Publish(new PlayerHealthChangedEvent(0, _maxHealth));
+            Die();
         }
 
         private void StartInvulnerability()
@@ -298,6 +336,13 @@ namespace Platformer2D.Player.Controllers
             if (_isDead || IsAtMaxHealth) return;
 
             _currentHealth = Mathf.Min(_currentHealth + amount, _maxHealth);
+            EventBus.Publish(new PlayerHealthChangedEvent(_currentHealth, _maxHealth));
+        }
+
+        public void SetMaxHealth(int newMaxHealth)
+        {
+            _maxHealth = Mathf.Max(1, newMaxHealth);
+            _currentHealth = Mathf.Min(_currentHealth, _maxHealth);
             EventBus.Publish(new PlayerHealthChangedEvent(_currentHealth, _maxHealth));
         }
 

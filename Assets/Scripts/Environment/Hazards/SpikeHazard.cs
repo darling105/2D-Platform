@@ -17,6 +17,8 @@ namespace Platformer2D.Environment.Hazards
         [SerializeField] private bool _instantKill = false;
         [Tooltip("Lực hất văng khi dẫm phải gai")]
         [SerializeField] private Vector2 _knockbackForce = new Vector2(0f, 10f);
+        [Tooltip("Chỉ gây sát thương cho Player (tránh quái tự dẫm gai chết)")]
+        [SerializeField] private bool _damagePlayerOnly = true;
 
         private void OnTriggerEnter2D(Collider2D other)
         {
@@ -30,6 +32,9 @@ namespace Platformer2D.Environment.Hazards
 
         private void ApplyHazard(GameObject target)
         {
+            if (target == null) return;
+            if (_damagePlayerOnly && !target.CompareTag("Player")) return;
+
             IDamageable damageable = target.GetComponent<IDamageable>();
             if (damageable != null && !damageable.IsDead)
             {

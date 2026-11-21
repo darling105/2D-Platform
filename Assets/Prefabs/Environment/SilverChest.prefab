@@ -159,6 +159,7 @@ MonoBehaviour:
   _dropPrefabs:
   - {fileID: 609217758414165796, guid: 049d5d6254d31314aa2d36ab897bff72, type: 3}
   - {fileID: 83300065971619246, guid: 9ccffc676bd481041b58826e5536cc29, type: 3}
+  - {fileID: 83300065971619246, guid: e4c84a0d95c1102a90184ebf32b10a01, type: 3}
   _openSoundId: ChestOpen
   _openFrames:
   - {fileID: 4880212730713047097, guid: 00b889c2033349a4b9115466be4fe260, type: 3}

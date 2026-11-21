@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 454282828317924808}
   - component: {fileID: 7454062116929999109}
+  - component: {fileID: 2892313280805635652}
   - component: {fileID: 7824235831069083663}
   - component: {fileID: 6050014976881401043}
   - component: {fileID: 7544832328290061806}
@@ -97,6 +98,28 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_SpriteSortPoint: 0
   m_BlendShapeWeights: []
+--- !u!95 &2892313280805635652
+Animator:
+  serializedVersion: 7
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1334339139675065503}
+  m_Enabled: 1
+  m_Avatar: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: 57bd7a9db5dc118449f6e135f01e1e5a, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_StabilizeFeet: 0
+  m_AnimatePhysics: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorStateOnDisable: 0
+  m_WriteDefaultValuesOnDisable: 0
 --- !u!50 &7824235831069083663
 Rigidbody2D:
   serializedVersion: 5
@@ -113,7 +136,7 @@ Rigidbody2D:
   m_LinearDamping: 0
   m_AngularDamping: 0.05
   m_GravityScale: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: d065680720a4c954c981326706334721, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -122,7 +145,7 @@ Rigidbody2D:
     m_Bits: 0
   m_Interpolate: 0
   m_SleepingMode: 1
-  m_CollisionDetection: 0
+  m_CollisionDetection: 1
   m_Constraints: 4
 --- !u!61 &6050014976881401043
 BoxCollider2D:
@@ -134,7 +157,7 @@ BoxCollider2D:
   m_Enabled: 1
   serializedVersion: 3
   m_Density: 1
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: d065680720a4c954c981326706334721, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
@@ -158,7 +181,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: -0.015625}
+  m_Offset: {x: 0, y: -0.021562487}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -168,7 +191,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.88, y: 0.6875}
+  m_Size: {x: 0.82, y: 0.675625}
   m_EdgeRadius: 0
 --- !u!114 &7544832328290061806
 MonoBehaviour:
@@ -182,7 +205,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d4bae5364fd30f41abf9ef87918068d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Platformer2D.Combat.Health
-  _maxHealth: 4
+  _maxHealth: 3
   _isPlayer: 0
   _invulnerabilityDuration: 0.8
   _enemyInvulnerabilityDuration: 0.08
@@ -201,14 +224,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f772f6f4bac24014f97525f88ad22d81, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Platformer2D.Enemies.Base.BaseEnemy
-  _moveSpeed: 1.8
+  _archetype: 0
+  _spriteFacesLeftByDefault: 1
+  _moveSpeed: 1.6
+  _chaseSpeedMultiplier: 1.25
   _startMovingRight: 1
-  _forwardCheckDistance: 0.5
-  _ledgeCheckDepth: 0.8
+  _maxPatrolDistance: 3.2
+  _edgePauseDuration: 0.35
+  _forwardCheckDistance: 0.35
+  _ledgeCheckDepth: 0.55
   _groundLayer:
     serializedVersion: 2
     m_Bits: 4294967295
-  _animator: {fileID: 0}
+  _aggroRange: 4.8
+  _attackRange: 1.25
+  _attackDamage: 1
+  _attackCooldown: 1.55
+  _attackWindup: 0.28
+  _meleeHitOffsetX: 0.65
+  _meleeHitRadius: 0.65
+  _leashDistance: 7.5
+  _lostTargetDuration: 1.2
+  _projectileFrames: []
+  _projectileSpeed: 5.2
+  _projectileLifetime: 2.6
+  _animator: {fileID: 2892313280805635652}
 --- !u!114 &2764935544571645090
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -223,11 +263,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::Platformer2D.Combat.DamageDealer
   _damageAmount: 1
   _damageType: 0
-  _knockbackHorizontal: 5
-  _knockbackVertical: 4
+  _knockbackHorizontal: 4.5
+  _knockbackVertical: 3.5
   _targetTag: Player
   _owner: {fileID: 0}
   _shakeCameraOnHit: 1
-  _shakeIntensity: 0.2
+  _shakeIntensity: 0.045
   _hitVfxPrefab: {fileID: 0}
   _hitSoundId: Hit

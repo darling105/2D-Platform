@@ -135,7 +135,7 @@ namespace Platformer2D.Combat
 
             HashSet<IDamageable> hitTargets = new HashSet<IDamageable>();
             Vector2 impactPos = transform.position;
-            Vector2 knockback = new Vector2(_directionX * 6f, 4f);
+            Vector2 knockback = new Vector2(_directionX * 5f, 1.2f);
 
             if (directTarget != null && !directTarget.IsDead)
             {
@@ -159,7 +159,7 @@ namespace Platformer2D.Combat
             }
 
             SpawnExplosionVfx(impactPos);
-            CameraFollow2D.Instance?.Shake(0.14f, 0.16f);
+            CameraFollow2D.Instance?.Shake(0.09f, 0.06f);
             EventBus.Publish(new PlaySoundEvent("Explosion", SoundType.SFX, impactPos));
             Destroy(gameObject);
         }

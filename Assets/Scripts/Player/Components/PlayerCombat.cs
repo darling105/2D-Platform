@@ -43,7 +43,7 @@ namespace Platformer2D.Player.Components
         [Tooltip("Hệ số đẩy lùi phát đấm 1 của Attack 2 (nhẹ để giữ mục tiêu trong tầm cho phát 2)")]
         [SerializeField] private float _attack2FirstHitKnockbackScale = 0.25f;
         [Tooltip("Hệ số đẩy lùi phát đấm 2 kết liễu của Attack 2")]
-        [SerializeField] private float _attack2SecondHitKnockbackScale = 1.25f;
+        [SerializeField] private float _attack2SecondHitKnockbackScale = 1.0f;
 
         [Header("Ranged Throw")]
         [Tooltip("Prefab của viên đạn ném (tùy chọn, nếu trống sẽ tự tạo đạn đá Rock1)")]
@@ -77,6 +77,13 @@ namespace Platformer2D.Player.Components
         public bool IsAttacking => _attackAnimLockTimer > 0f;
         public int CurrentRocks => _currentRocks;
         public int MaxRocks => _maxRocks;
+        public int BonusAttackDamage { get; set; } = 0;
+
+        public void SetMaxRocks(int newMaxRocks)
+        {
+            _maxRocks = Mathf.Max(1, newMaxRocks);
+            EventBus.Publish(new RockCountChangedEvent(_currentRocks, _maxRocks));
+        }
 
         // Events để PlayerAnimationSync lắng nghe kích hoạt hoạt ảnh
         public event Action OnAttack1Triggered;
@@ -252,7 +259,9 @@ namespace Platformer2D.Player.Components
 
             if (_attackHitbox == null) yield break;
 
-            _damageDealer?.BeginSwing(damageOverride, knockbackScale, shakeScale);
+            int baseDmg = damageOverride > 0 ? damageOverride : (_damageDealer != null ? _damageDealer.DamageAmount : 1);
+            int finalDmg = baseDmg + BonusAttackDamage;
+            _damageDealer?.BeginSwing(finalDmg, knockbackScale, shakeScale);
             _attackHitbox.enabled = true;
             yield return new WaitForSeconds(duration);
             _attackHitbox.enabled = false;
@@ -293,6 +302,10 @@ namespace Platformer2D.Player.Components
             if (proj != null)
             {
                 proj.Initialize(new Vector2(facingRight ? 1f : -1f, 0.15f), gameObject);
+                if (BonusAttackDamage > 0)
+                {
+                    proj.SetDamage(1 + BonusAttackDamage);
+                }
             }
 
             EventBus.Publish(new PlaySoundEvent("Throw", SoundType.SFX, transform.position));

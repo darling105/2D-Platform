@@ -193,11 +193,59 @@ namespace Platformer2D.Managers
         /// </summary>
         public void PlaySFX(string soundId, float volumeMultiplier = 1f)
         {
+            if (string.IsNullOrEmpty(soundId)) return;
+
             if (_soundDict.TryGetValue(soundId, out var item))
             {
                 PlaySFX(item.Clip, item.Volume * volumeMultiplier, item.Pitch);
+                return;
             }
-            else
+
+            // Fallback âm thanh click UI nếu ID là "UI_Click" hoặc "Click"
+            if (soundId.Contains("Click") || soundId.Contains("UI"))
+            {
+                if (_soundDict.TryGetValue("Click", out item) ||
+                    _soundDict.TryGetValue("Coin", out item) ||
+                    _soundDict.TryGetValue("Jump", out item))
+                {
+                    PlaySFX(item.Clip, item.Volume * volumeMultiplier * 0.4f, item.Pitch);
+                    return;
+                }
+            }
+
+            // Fallback cho JumpPad / Bounce -> dùng âm Jump
+            if (soundId.Contains("Bounce"))
+            {
+                if (_soundDict.TryGetValue("Jump", out item))
+                {
+                    PlaySFX(item.Clip, item.Volume * volumeMultiplier * 1.1f, 1.25f);
+                    return;
+                }
+            }
+
+            // Fallback cho thùng nổ, đập vỡ gỗ -> dùng âm Hit / EnemyHurt
+            if (soundId.Contains("Hit") || soundId.Contains("Explosion") || soundId.Contains("Break"))
+            {
+                if (_soundDict.TryGetValue("EnemyHurt", out item) ||
+                    _soundDict.TryGetValue("Hit", out item) ||
+                    _soundDict.TryGetValue("PlayerHurt", out item))
+                {
+                    PlaySFX(item.Clip, item.Volume * volumeMultiplier, 0.85f);
+                    return;
+                }
+            }
+
+            // Fallback cho vật phẩm / thức ăn -> dùng âm Coin
+            if (soundId.Contains("Food") || soundId.Contains("Eat") || soundId.Contains("Item"))
+            {
+                if (_soundDict.TryGetValue("Coin", out item))
+                {
+                    PlaySFX(item.Clip, item.Volume * volumeMultiplier, 1.15f);
+                    return;
+                }
+            }
+
+            if (!soundId.Contains("Click"))
             {
                 Debug.LogWarning($"[AudioManager] Không tìm thấy SFX ID: {soundId}");
             }

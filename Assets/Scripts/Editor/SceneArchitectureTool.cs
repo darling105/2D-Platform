@@ -45,13 +45,23 @@ namespace Platformer2D.EditorTools
         private const string PrefabCheckpointPath = "Assets/Prefabs/Environment/Checkpoint.prefab";
         private const string PrefabSilverChestPath = "Assets/Prefabs/Environment/SilverChest.prefab";
         private const string PrefabVictoryGoalPath = "Assets/Prefabs/Environment/VictoryGoal.prefab";
+        private const string PrefabExplosiveBarrelPath = "Assets/Prefabs/Environment/ExplosiveBarrel.prefab";
 
         private const string PrefabCoinPath = "Assets/Prefabs/Items/CoinItem.prefab";
         private const string PrefabRockPickupPath = "Assets/Prefabs/Items/RockPickup.prefab";
         private const string PrefabHealthPickupPath = "Assets/Prefabs/Items/HealthPickup.prefab";
+        private const string PrefabFoodMeatPath = "Assets/Prefabs/Items/Food_Meat.prefab";
+        private const string PrefabFoodCakePath = "Assets/Prefabs/Items/Food_Cake.prefab";
+        private const string PrefabFoodCookiesPath = "Assets/Prefabs/Items/Food_Cookies.prefab";
         private const string PrefabSilverKeyPath = "Assets/Prefabs/Items/SilverKey.prefab";
         private const string PrefabGoldenKeyPath = "Assets/Prefabs/Items/GoldenKey.prefab";
-        private const string PrefabEnemyOozePath = "Assets/Prefabs/Enemies/Enemy_Ooze_Test.prefab";
+        private const string PrefabEnemyOozeTestPath = "Assets/Prefabs/Enemies/Enemy_Ooze_Test.prefab";
+        private const string PrefabEnemyOozePath = "Assets/Prefabs/Enemies/Enemy_Ooze.prefab";
+        private const string PrefabEnemyRedPath = "Assets/Prefabs/Enemies/Enemy_Red.prefab";
+        private const string PrefabEnemyTinyPath = "Assets/Prefabs/Enemies/Enemy_Tiny.prefab";
+        private const string PrefabEnemyMagePath = "Assets/Prefabs/Enemies/Enemy_Mage.prefab";
+        private const string PrefabEnemyBearPath = "Assets/Prefabs/Enemies/Enemy_Bear.prefab";
+        private const string PrefabEnemyYellowPath = "Assets/Prefabs/Enemies/Enemy_Yellow.prefab";
 
         // Field Tileset (Mặt đất cỏ, Sàn 1 chiều, Trần đất)
         private const string SpriteFieldTopLeft = "Assets/GameAssets/Field-Tileset/Tiles/Tileset/TileSet_01.png";
@@ -80,6 +90,7 @@ namespace Platformer2D.EditorTools
         private const string SpriteFieldFallLeft = "Assets/GameAssets/Field-Tileset/Tiles/Tileset/TileSet_39.png";
         private const string SpriteFieldFallMid = "Assets/GameAssets/Field-Tileset/Tiles/Tileset/TileSet_40.png";
         private const string SpriteFieldFallRight = "Assets/GameAssets/Field-Tileset/Tiles/Tileset/TileSet_41.png";
+        private const string SpriteGiantMushroom = "Assets/GameAssets/Cave-Tileset/Objects/Giant_Mushrooms/1.png";
         private const string SpriteJumpBarrel = "Assets/GameAssets/Field-Tileset/Objects/Boxes/Barrel2.png";
 
         // Background Parallax 8 lớp & Props trang trí khu vực Field
@@ -132,8 +143,39 @@ namespace Platformer2D.EditorTools
             public GameObject SilverKey;
             public GameObject GoldenKey;
             public GameObject SilverChest;
+            public GameObject ExplosiveBarrel;
+            public GameObject FoodMeat;
+            public GameObject FoodCake;
+            public GameObject FoodCookies;
             public GameObject EnemyOoze;
+            public GameObject EnemyRed;
+            public GameObject EnemyTiny;
+            public GameObject EnemyMage;
+            public GameObject EnemyBear;
+            public GameObject EnemyYellow;
             public GameObject VictoryGoal;
+        }
+
+        private struct EnemyConfig
+        {
+            public string Name;
+            public string PrefabPath;
+            public string SpritePath;
+            public string ControllerPath;
+            public EnemyArchetype Archetype;
+            public int MaxHealth;
+            public float MoveSpeed;
+            public float ChaseMultiplier;
+            public float AggroRange;
+            public float AttackRange;
+            public int AttackDamage;
+            public float AttackCooldown;
+            public float AttackWindup;
+            public float MaxPatrolDistance;
+            public float Scale;
+            public string ProjectileSpritePath;
+            public float ProjectileSpeed;
+            public float ProjectileLifetime;
         }
 
         [MenuItem("Tools/Platformer Scenes/0. Setup Kiến trúc Scene & Core Prefabs")]
@@ -204,6 +246,89 @@ namespace Platformer2D.EditorTools
 
         [MenuItem("Tools/Platformer Scenes/3. Mở Level_01 (Scene Chính)")]
         public static void OpenLevel01Scene() => OpenTargetScene(SceneNames.Level01Path);
+
+        [MenuItem("Tools/Platformer Scenes/4. Cập nhật 6 Loại Quái & Dựng lại Level_01 (Độ khó 1)")]
+        public static void RebuildAllEnemiesAndLevelsMenu()
+        {
+            if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo())
+            {
+                return;
+            }
+
+            RebuildAllEnemiesAndLevelsHeadless();
+            EditorSceneManager.OpenScene(SceneNames.Level01Path, OpenSceneMode.Single);
+
+            EditorUtility.DisplayDialog(
+                "Cập nhật Quái & Level_01 hoàn tất!",
+                "Đã tạo mới toàn bộ 6 Prefab Quái vật (AI thông minh, né gai, quay đúng hướng) và dựng hoàn chỉnh Level_01 (Độ khó 1, tối ưu hóa Map) cùng MechanicsTestScene!",
+                "Tuyệt vời");
+        }
+
+        /// <summary>
+        /// Tạo lại 6 Prefab Quái vật, tối ưu hóa Map và dựng lại Level_01 + MechanicsTestScene không chặn Dialog.
+        /// </summary>
+        public static void RebuildAllEnemiesAndLevelsHeadless()
+        {
+            EnsureFolderStructure();
+
+            DonorAssets donors = LoadExistingDonorsOrExtractFallback();
+            EnvironmentPrefabs envPrefabs = CreateGameplayPrefabs(donors);
+            UISetupTool.BuildUIPrefabsOnly();
+
+            CreateLevel01Scene(donors, envPrefabs);
+            CreateMechanicsTestScene(donors, envPrefabs);
+            ConfigureBuildSettings();
+
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
+
+        private static DonorAssets LoadExistingDonorsOrExtractFallback()
+        {
+            DonorAssets donors = new DonorAssets
+            {
+                PlayerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPlayerPath),
+                CameraRigPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabCameraRigPath),
+                GlobalLightPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabGlobalLightPath),
+                GameSystemsPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabGameSystemsPath),
+                FrictionlessMaterial = AssetDatabase.LoadAssetAtPath<PhysicsMaterial2D>("Assets/Materials/Frictionless2D.physicsMaterial2D"),
+                SquareSprite = LoadFirstSprite("Assets/GameAssets/UI/2 Bars/Square.png")
+            };
+
+            if (donors.PlayerPrefab != null && donors.PlayerPrefab.TryGetComponent<SpriteRenderer>(out var playerSr))
+            {
+                donors.SpriteMaterial = playerSr.sharedMaterial;
+            }
+
+            if (donors.PlayerPrefab == null || donors.CameraRigPrefab == null || donors.GlobalLightPrefab == null || donors.SpriteMaterial == null)
+            {
+                if (File.Exists(SampleScenePath))
+                {
+                    donors = ExtractDonorPrefabsFromSampleScene();
+                    donors.GameSystemsPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabGameSystemsPath) ?? CreateGameSystemsPrefab();
+                    return donors;
+                }
+            }
+
+            if (donors.PlayerPrefab != null && donors.PlayerPrefab.GetComponent<PlayerProgression>() == null)
+            {
+                GameObject contents = PrefabUtility.LoadPrefabContents(PrefabPlayerPath);
+                if (contents != null)
+                {
+                    contents.AddComponent<PlayerProgression>();
+                    PrefabUtility.SaveAsPrefabAsset(contents, PrefabPlayerPath);
+                    PrefabUtility.UnloadPrefabContents(contents);
+                    donors.PlayerPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabPlayerPath);
+                }
+            }
+
+            if (donors.GameSystemsPrefab == null)
+            {
+                donors.GameSystemsPrefab = CreateGameSystemsPrefab();
+            }
+
+            return donors;
+        }
 
         private static void OpenTargetScene(string scenePath)
         {
@@ -284,6 +409,10 @@ namespace Platformer2D.EditorTools
                 playerTemp.transform.position = Vector3.zero;
                 PlayerSkills skills = playerTemp.GetComponent<PlayerSkills>() ?? playerTemp.AddComponent<PlayerSkills>();
                 ConfigurePlayerSkillAssets(skills);
+                if (playerTemp.GetComponent<PlayerProgression>() == null)
+                {
+                    playerTemp.AddComponent<PlayerProgression>();
+                }
                 donors.PlayerPrefab = SaveTempAsPrefab(playerTemp, PrefabPlayerPath);
             }
 
@@ -424,20 +553,18 @@ namespace Platformer2D.EditorTools
             oneWay.AddComponent<OneWayPlatform>();
             prefabs.OneWayPlatform = SaveTempAsPrefab(oneWay, PrefabOneWayPath);
 
-            // 4. Jump Pad (Thùng gỗ lò xo bật nhảy đồng bộ Field)
+            // 4. Jump Pad (Nấm nhún khổng lồ bật nhảy sống động)
             GameObject jumpPad = new GameObject("JumpPad");
-            GameObject barrelVisual = CreateSpriteObject("Visual", SpriteJumpBarrel, donors, Color.white, 0);
-            barrelVisual.transform.SetParent(jumpPad.transform, false);
-            const float jumpPadScale = 1.15f;
-            barrelVisual.transform.localScale = new Vector3(jumpPadScale, jumpPadScale, 1f);
-            Sprite barrelSprite = barrelVisual.GetComponent<SpriteRenderer>().sprite;
-            float barrelOffsetY = barrelSprite != null ? -barrelSprite.bounds.min.y * jumpPadScale : 0.45f;
-            barrelVisual.transform.localPosition = new Vector3(0f, barrelOffsetY, 0f);
+            GameObject mushroomVisual = CreateSpriteObject("Visual", SpriteGiantMushroom, donors, Color.white, 0);
+            mushroomVisual.transform.SetParent(jumpPad.transform, false);
+            const float jumpPadScale = 0.5f;
+            mushroomVisual.transform.localScale = new Vector3(jumpPadScale, jumpPadScale, 1f);
+            mushroomVisual.transform.localPosition = new Vector3(0f, 0.75f, 0f);
             BoxCollider2D jpCol = jumpPad.AddComponent<BoxCollider2D>();
-            jpCol.size = new Vector2(0.95f, 0.86f);
-            jpCol.offset = new Vector2(0f, 0.43f);
+            jpCol.size = new Vector2(1.25f, 1.2f);
+            jpCol.offset = new Vector2(0f, 0.65f);
             JumpPad jpComp = jumpPad.AddComponent<JumpPad>();
-            SetFloatProperty(jpComp, "_bounceForce", 15.5f);
+            SetFloatProperty(jpComp, "_bounceForce", 16.5f);
             prefabs.JumpPad = SaveTempAsPrefab(jumpPad, PrefabJumpPadPath);
 
             // 5. Falling Platform (Bệ đất sỏi mỏng sụp lún Field)
@@ -504,24 +631,131 @@ namespace Platformer2D.EditorTools
             heart.AddComponent<HealthPickup>();
             prefabs.HealthPickup = SaveTempAsPrefab(heart, PrefabHealthPickupPath);
 
-            // 10. Enemy Patrol Dummy (Ooze)
-            GameObject enemy = CreateSpriteObject("Enemy_Ooze_Test", "Assets/GameAssets/Monster-Field/3 Ooze/Ooze.png", donors, Color.white, 0);
-            Rigidbody2D enemyRb = enemy.AddComponent<Rigidbody2D>();
-            enemyRb.constraints = RigidbodyConstraints2D.FreezeRotation;
-            BoxCollider2D enemyCol = enemy.AddComponent<BoxCollider2D>();
-            enemyCol.size = new Vector2(0.88f, 0.6875f);
-            enemyCol.offset = new Vector2(0f, -0.015625f);
-            Health enemyHealth = enemy.AddComponent<Health>();
-            SetIntProperty(enemyHealth, "_maxHealth", 4);
-            SetBoolProperty(enemyHealth, "_isPlayer", false);
-            BaseEnemy enemyAI = enemy.AddComponent<BaseEnemy>();
-            SetFloatProperty(enemyAI, "_moveSpeed", 1.8f);
-            DamageDealer enemyDealer = enemy.AddComponent<DamageDealer>();
-            SetIntProperty(enemyDealer, "_damageAmount", 1);
-            SetStringProperty(enemyDealer, "_targetTag", "Player");
-            SetFloatProperty(enemyDealer, "_knockbackHorizontal", 5f);
-            SetFloatProperty(enemyDealer, "_knockbackVertical", 4f);
-            prefabs.EnemyOoze = SaveTempAsPrefab(enemy, PrefabEnemyOozePath);
+            // 10. Bộ 6 Prefab Quái vật Field (Ooze, Red, Tiny, Mage, Bear, Yellow) + bản tương thích Enemy_Ooze_Test
+            var oozeCfg = new EnemyConfig
+            {
+                Name = "Enemy_Ooze",
+                PrefabPath = PrefabEnemyOozePath,
+                SpritePath = "Assets/GameAssets/Monster-Field/3 Ooze/Ooze.png",
+                ControllerPath = "Assets/Animations/Enemies/Field/Ooze/Ooze.controller",
+                Archetype = EnemyArchetype.PatrolSlime,
+                MaxHealth = 3,
+                MoveSpeed = 1.6f,
+                ChaseMultiplier = 1.25f,
+                AggroRange = 4.8f,
+                AttackRange = 1.25f,
+                AttackDamage = 1,
+                AttackCooldown = 1.55f,
+                AttackWindup = 0.28f,
+                MaxPatrolDistance = 3.2f,
+                Scale = 1.0f
+            };
+            prefabs.EnemyOoze = CreateEnemyPrefab(oozeCfg, donors);
+
+            oozeCfg.Name = "Enemy_Ooze_Test";
+            oozeCfg.PrefabPath = PrefabEnemyOozeTestPath;
+            CreateEnemyPrefab(oozeCfg, donors);
+
+            prefabs.EnemyRed = CreateEnemyPrefab(new EnemyConfig
+            {
+                Name = "Enemy_Red",
+                PrefabPath = PrefabEnemyRedPath,
+                SpritePath = "Assets/GameAssets/Monster-Field/4 Red/Red.png",
+                ControllerPath = "Assets/Animations/Enemies/Field/Red/Red.controller",
+                Archetype = EnemyArchetype.FastChaser,
+                MaxHealth = 3,
+                MoveSpeed = 2.2f,
+                ChaseMultiplier = 1.35f,
+                AggroRange = 6.2f,
+                AttackRange = 1.35f,
+                AttackDamage = 1,
+                AttackCooldown = 1.20f,
+                AttackWindup = 0.22f,
+                MaxPatrolDistance = 3.5f,
+                Scale = 1.0f
+            }, donors);
+
+            prefabs.EnemyTiny = CreateEnemyPrefab(new EnemyConfig
+            {
+                Name = "Enemy_Tiny",
+                PrefabPath = PrefabEnemyTinyPath,
+                SpritePath = "Assets/GameAssets/Monster-Field/5 Tiny/Tiny.png",
+                ControllerPath = "Assets/Animations/Enemies/Field/Tiny/Tiny.controller",
+                Archetype = EnemyArchetype.SpikeSummoner,
+                MaxHealth = 3,
+                MoveSpeed = 1.8f,
+                ChaseMultiplier = 1.15f,
+                AggroRange = 6.5f,
+                AttackRange = 4.8f,
+                AttackDamage = 1,
+                AttackCooldown = 2.0f,
+                AttackWindup = 0.34f,
+                MaxPatrolDistance = 3.0f,
+                Scale = 1.05f,
+                ProjectileSpritePath = "Assets/GameAssets/Monster-Field/5 Tiny/Attack_Spike.png",
+                ProjectileSpeed = 4.6f,
+                ProjectileLifetime = 1.4f
+            }, donors);
+
+            prefabs.EnemyMage = CreateEnemyPrefab(new EnemyConfig
+            {
+                Name = "Enemy_Mage",
+                PrefabPath = PrefabEnemyMagePath,
+                SpritePath = "Assets/GameAssets/Monster-Field/2 Mage/Mage.png",
+                ControllerPath = "Assets/Animations/Enemies/Field/Mage/Mage.controller",
+                Archetype = EnemyArchetype.RangedMage,
+                MaxHealth = 4,
+                MoveSpeed = 1.4f,
+                ChaseMultiplier = 1.10f,
+                AggroRange = 8.0f,
+                AttackRange = 6.8f,
+                AttackDamage = 1,
+                AttackCooldown = 2.20f,
+                AttackWindup = 0.38f,
+                MaxPatrolDistance = 2.4f,
+                Scale = 1.05f,
+                ProjectileSpritePath = "Assets/GameAssets/Monster-Field/2 Mage/Attack_ball.png",
+                ProjectileSpeed = 5.2f,
+                ProjectileLifetime = 2.6f
+            }, donors);
+
+            prefabs.EnemyBear = CreateEnemyPrefab(new EnemyConfig
+            {
+                Name = "Enemy_Bear",
+                PrefabPath = PrefabEnemyBearPath,
+                SpritePath = "Assets/GameAssets/Monster-Field/1 Bear/Bear.png",
+                ControllerPath = "Assets/Animations/Enemies/Field/Bear/Bear.controller",
+                Archetype = EnemyArchetype.HeavyBruiser,
+                MaxHealth = 5,
+                MoveSpeed = 1.5f,
+                ChaseMultiplier = 1.30f,
+                AggroRange = 5.8f,
+                AttackRange = 1.50f,
+                AttackDamage = 1,
+                AttackCooldown = 1.70f,
+                AttackWindup = 0.34f,
+                MaxPatrolDistance = 3.2f,
+                Scale = 1.15f
+            }, donors);
+
+            prefabs.EnemyYellow = CreateEnemyPrefab(new EnemyConfig
+            {
+                Name = "Enemy_Yellow",
+                PrefabPath = PrefabEnemyYellowPath,
+                SpritePath = "Assets/GameAssets/Monster-Field/6 Yellow/Yellow.png",
+                ControllerPath = "Assets/Animations/Enemies/Field/Yellow/Yellow.controller",
+                Archetype = EnemyArchetype.EliteCrusher,
+                MaxHealth = 6,
+                MoveSpeed = 1.6f,
+                ChaseMultiplier = 1.32f,
+                AggroRange = 6.8f,
+                AttackRange = 1.60f,
+                AttackDamage = 1,
+                AttackCooldown = 1.50f,
+                AttackWindup = 0.32f,
+                MaxPatrolDistance = 4.0f,
+                Scale = 1.25f
+            }, donors);
 
             // 11. Chìa khóa Bạc & Vàng (hoạt ảnh xoay 12 frame)
             prefabs.SilverKey = CreateKeyPrefab(
@@ -552,7 +786,7 @@ namespace Platformer2D.EditorTools
             SetIntProperty(chestComp, "_requiredKeyType", (int)KeyType.Silver);
             SetIntProperty(chestComp, "_bonusCoins", 40);
             SetObjectProperty(chestComp, "_dropPrefab", prefabs.RockPickup);
-            SetObjectArrayProperty(chestComp, "_dropPrefabs", new Object[] { prefabs.RockPickup, prefabs.HealthPickup });
+            SetObjectArrayProperty(chestComp, "_dropPrefabs", new Object[] { prefabs.RockPickup, prefabs.HealthPickup, AssetDatabase.LoadAssetAtPath<GameObject>(PrefabFoodMeatPath) });
             SetSpriteArrayProperty(chestComp, "_openFrames", LoadAllSpritesSorted("Assets/GameAssets/Field-Tileset/Objects_Animated/Silver_Chest_Open.png"));
             SetSpriteArrayProperty(chestComp, "_pickupVfxFrames", pickupVfxFrames);
             prefabs.SilverChest = SaveTempAsPrefab(silverChest, PrefabSilverChestPath);
@@ -570,7 +804,90 @@ namespace Platformer2D.EditorTools
             SetSpriteArrayProperty(victoryComp, "_pickupVfxFrames", pickupVfxFrames);
             prefabs.VictoryGoal = SaveTempAsPrefab(victoryGoal, PrefabVictoryGoalPath);
 
+            // 14. Tương tác mới: Thùng nổ & Vật phẩm thức ăn
+            prefabs.ExplosiveBarrel = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabExplosiveBarrelPath);
+            prefabs.FoodMeat = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabFoodMeatPath);
+            prefabs.FoodCake = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabFoodCakePath);
+            prefabs.FoodCookies = AssetDatabase.LoadAssetAtPath<GameObject>(PrefabFoodCookiesPath);
+
             return prefabs;
+        }
+
+        private static GameObject CreateEnemyPrefab(EnemyConfig cfg, DonorAssets donors)
+        {
+            GameObject enemy = CreateSpriteObject(cfg.Name, cfg.SpritePath, donors, Color.white, 0);
+            enemy.transform.localScale = new Vector3(cfg.Scale, cfg.Scale, 1f);
+
+            Animator anim = enemy.AddComponent<Animator>();
+            if (!string.IsNullOrEmpty(cfg.ControllerPath))
+            {
+                anim.runtimeAnimatorController = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(cfg.ControllerPath);
+            }
+
+            Rigidbody2D rb = enemy.AddComponent<Rigidbody2D>();
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation;
+            rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+            if (donors.FrictionlessMaterial != null) rb.sharedMaterial = donors.FrictionlessMaterial;
+
+            BoxCollider2D col = enemy.AddComponent<BoxCollider2D>();
+            SpriteRenderer sr = enemy.GetComponent<SpriteRenderer>();
+            if (sr != null && sr.sprite != null)
+            {
+                Bounds sb = sr.sprite.bounds;
+                col.size = new Vector2(Mathf.Clamp(sb.size.x * 0.82f, 0.50f, 1.05f), Mathf.Clamp(sb.size.y * 0.94f, 0.55f, 1.15f));
+                col.offset = new Vector2(sb.center.x, sb.min.y + col.size.y * 0.5f);
+            }
+            else
+            {
+                col.size = new Vector2(0.80f, 0.72f);
+                col.offset = Vector2.zero;
+            }
+            if (donors.FrictionlessMaterial != null) col.sharedMaterial = donors.FrictionlessMaterial;
+
+            Health health = enemy.AddComponent<Health>();
+            SetIntProperty(health, "_maxHealth", cfg.MaxHealth);
+            SetBoolProperty(health, "_isPlayer", false);
+
+            BaseEnemy ai = enemy.AddComponent<BaseEnemy>();
+            SetIntProperty(ai, "_archetype", (int)cfg.Archetype);
+            SetBoolProperty(ai, "_spriteFacesLeftByDefault", true);
+            SetFloatProperty(ai, "_moveSpeed", cfg.MoveSpeed);
+            SetFloatProperty(ai, "_chaseSpeedMultiplier", cfg.ChaseMultiplier);
+            SetFloatProperty(ai, "_aggroRange", cfg.AggroRange);
+            SetFloatProperty(ai, "_attackRange", cfg.AttackRange);
+            SetIntProperty(ai, "_attackDamage", cfg.AttackDamage);
+            SetFloatProperty(ai, "_attackCooldown", cfg.AttackCooldown);
+            SetFloatProperty(ai, "_attackWindup", cfg.AttackWindup);
+            SetFloatProperty(ai, "_maxPatrolDistance", cfg.MaxPatrolDistance);
+            SetObjectProperty(ai, "_animator", anim);
+
+            if (!string.IsNullOrEmpty(cfg.ProjectileSpritePath))
+            {
+                SetSpriteArrayProperty(ai, "_projectileFrames", LoadAllSpritesSorted(cfg.ProjectileSpritePath));
+                SetFloatProperty(ai, "_projectileSpeed", cfg.ProjectileSpeed);
+                SetFloatProperty(ai, "_projectileLifetime", cfg.ProjectileLifetime);
+            }
+
+            DamageDealer dealer = enemy.AddComponent<DamageDealer>();
+            SetIntProperty(dealer, "_damageAmount", cfg.AttackDamage);
+            SetStringProperty(dealer, "_targetTag", "Player");
+            SetFloatProperty(dealer, "_knockbackHorizontal", 4.5f);
+            SetFloatProperty(dealer, "_knockbackVertical", 3.5f);
+
+            return SaveTempAsPrefab(enemy, cfg.PrefabPath);
+        }
+
+        private static GameObject InstantiateEnemyOnSurface(GameObject prefab, Transform parent, float x, float surfaceTopY)
+        {
+            if (prefab == null) return null;
+
+            float bottomOffset = 0.36f;
+            if (prefab.TryGetComponent<BoxCollider2D>(out var col))
+            {
+                bottomOffset = -(col.offset.y - col.size.y * 0.5f) * prefab.transform.localScale.y;
+            }
+
+            return InstantiatePrefab(prefab, parent, new Vector3(x, surfaceTopY + bottomOffset + 0.02f, 0f));
         }
 
         private static GameObject CreateKeyPrefab(
@@ -633,29 +950,136 @@ namespace Platformer2D.EditorTools
             Transform bgSection = CreateSection("=== BACKGROUND & PROPS ===");
             CreateFieldParallaxBackground(bgSection, donors);
             Color backTreeTint = new Color(0.84f, 0.93f, 0.92f, 0.92f);
-            CreateGroundProp("Prop_BackTreeA", bgSection, SpriteTreeBack1, -4.5f, -1.5f, donors, -14, 1f, false, backTreeTint);
-            CreateGroundProp("Prop_BackTreeB", bgSection, SpriteTreeBack3, 3.8f, -1.5f, donors, -14, 1f, true, backTreeTint);
-            CreateGroundProp("Prop_TreeLeft", bgSection, SpriteTree1, -6.2f, -1.5f, donors, -8);
-            CreateGroundProp("Prop_TreeRight", bgSection, SpriteTree3, 5.8f, -1.5f, donors, -8, 1f, true);
-            CreateGroundProp("Prop_SignRight", bgSection, SpriteSignRight, -1.8f, -1.5f, donors, -6);
-            CreateGroundProp("Prop_Rock", bgSection, SpriteRockSmall, 3.5f, -1.5f, donors, -6);
-            CreateGroundProp("Prop_GrassA", bgSection, SpriteGrassTuft, -3.5f, -1.5f, donors, -5);
-            CreateGroundProp("Prop_GrassB", bgSection, SpriteGrass2, 2.2f, -1.5f, donors, -5, 1f, true);
+
+            // Props trang trí dọc 5 khu vực Level_01
+            CreateGroundProp("Prop_Z1_BackTreeA", bgSection, SpriteTreeBack1, -2.0f, -1.5f, donors, -14, 1f, false, backTreeTint);
+            CreateGroundProp("Prop_Z1_BackTreeB", bgSection, SpriteTreeBack2, 9.5f, -1.5f, donors, -14, 1f, true, backTreeTint);
+            CreateGroundProp("Prop_Z1_TreeA", bgSection, SpriteTree1, -4.6f, -1.5f, donors, -8);
+            CreateGroundProp("Prop_Z1_Sign", bgSection, SpriteSignRight, -1.0f, -1.5f, donors, -6);
+            CreateGroundProp("Prop_Z1_GrassA", bgSection, SpriteGrassTuft, 0.2f, -1.5f, donors, -5);
+            CreateGroundProp("Prop_Z1_Rock", bgSection, SpriteRockSmall, 6.8f, -1.5f, donors, -6);
+            CreateGroundProp("Prop_Z1_TreeB", bgSection, SpriteTree3, 14.5f, -1.5f, donors, -8, 1f, true);
+
+            CreateGroundProp("Prop_Z2_BackTreeA", bgSection, SpriteTreeBack3, 24.5f, -1.5f, donors, -14, 1f, false, backTreeTint);
+            CreateGroundProp("Prop_Z2_BackTreeB", bgSection, SpriteTreeBack4, 38.0f, -1.5f, donors, -14, 1f, true, backTreeTint);
+            CreateGroundProp("Prop_Z2_GrassA", bgSection, SpriteGrass3, 29.0f, -1.5f, donors, -5);
+            CreateGroundProp("Prop_Z2_Tree", bgSection, SpriteTree2, 33.2f, -1.5f, donors, -8);
+            CreateGroundProp("Prop_Z2_RockBig", bgSection, SpriteRockBig, 44.0f, -1.5f, donors, -7);
+
+            CreateGroundProp("Prop_Z3_BackTreeA", bgSection, SpriteTreeBack1, 58.5f, -1.5f, donors, -14, 1f, false, backTreeTint);
+            CreateGroundProp("Prop_Z3_BackTreeB", bgSection, SpriteTreeBack2, 71.0f, -1.5f, donors, -14, 1f, true, backTreeTint);
+            CreateGroundProp("Prop_Z3_TreeA", bgSection, SpriteTree4, 59.5f, -1.5f, donors, -8);
+            CreateGroundProp("Prop_Z3_GrassA", bgSection, SpriteGrass5, 65.5f, -1.5f, donors, -5);
+            CreateGroundProp("Prop_Z3_SignJump", bgSection, SpriteSignJumpUp, 73.2f, -1.5f, donors, -6);
+
+            CreateGroundProp("Prop_Z4_BackTree", bgSection, SpriteTreeBack3, 86.5f, 1.5f, donors, -14, 1f, false, backTreeTint);
+            CreateGroundProp("Prop_Z4_Grass", bgSection, SpriteGrass4, 82.0f, 1.5f, donors, -5);
+            CreateGroundProp("Prop_Z4_Rock", bgSection, SpriteRockSmall2, 87.5f, 1.5f, donors, -6);
+
+            CreateGroundProp("Prop_Z5_BackTreeA", bgSection, SpriteTreeBack4, 102.0f, 0.0f, donors, -14, 1f, false, backTreeTint);
+            CreateGroundProp("Prop_Z5_BackTreeB", bgSection, SpriteTreeBack1, 113.5f, 0.0f, donors, -14, 1f, true, backTreeTint);
+            CreateGroundProp("Prop_Z5_TreeA", bgSection, SpriteTree1, 99.5f, 0.0f, donors, -8);
+            CreateGroundProp("Prop_Z5_RockBig", bgSection, SpriteRockBig2, 108.0f, 0.0f, donors, -7);
+            CreateGroundProp("Prop_Z5_SignGoal", bgSection, SpriteSignRight, 114.2f, 0.0f, donors, -6);
 
             Transform playerSection = CreateSection("=== PLAYER ===");
+            Vector3 startPos = new Vector3(-3.5f, -0.5f, 0f);
             GameObject spawnPoint = new GameObject("DefaultSpawnPoint");
             spawnPoint.transform.SetParent(playerSection, false);
-            spawnPoint.transform.position = Vector3.zero;
+            spawnPoint.transform.position = startPos;
             SetObjectProperty(cpManager, "_defaultSpawnPoint", spawnPoint.transform);
-            InstantiatePrefab(donors.PlayerPrefab, playerSection, Vector3.zero);
+            InstantiatePrefab(donors.PlayerPrefab, playerSection, startPos);
 
-            Transform envSection = CreateSection("=== ENVIRONMENT ===");
-            CreateTiledGround("Ground_Start", envSection, 0f, -1.5f, 16, 5, donors);
+            // KHU 1: Đồng Cỏ Khởi Đầu (-6 .. +18, topY = -1.5)
+            Transform z1 = CreateSection("=== ZONE 1 - DONG CO KHOI DAU ===");
+            CreateTiledGround("Ground_Zone1", z1, 6.0f, -1.5f, 24, 3, donors);
+            CreateTiledStoneWall("Wall_Start", z1, -5.6f, -1.5f, 5, donors);
+            InstantiatePrefab(p.RockPickup, z1, new Vector3(1.2f, -1.18f, 0f));
+            InstantiatePrefab(p.Crate, z1, new Vector3(3.0f, -1.109f, 0f));
+            InstantiatePrefab(p.OneWayPlatform, z1, new Vector3(5.0f, 0.70f, 0f));
+            InstantiatePrefab(p.Coin, z1, new Vector3(4.5f, 1.25f, 0f));
+            InstantiatePrefab(p.Coin, z1, new Vector3(5.5f, 1.25f, 0f));
+            // Bệ nhún Nấm Khổng Lồ bí mật Zone 1 -> nhảy lên đài cao lấy Bánh quy hồi Thể lực
+            InstantiatePrefab(p.JumpPad, z1, new Vector3(7.5f, -1.5f, 0f));
+            InstantiatePrefab(p.OneWayPlatform, z1, new Vector3(7.5f, 2.50f, 0f));
+            InstantiatePrefab(p.FoodCookies, z1, new Vector3(7.5f, 3.05f, 0f));
+            InstantiateEnemyOnSurface(p.EnemyOoze, z1, 11.5f, -1.5f);
+            InstantiatePrefab(p.Ladder, z1, new Vector3(16.0f, 0.50f, 0f));
+            InstantiatePrefab(p.OneWayPlatform, z1, new Vector3(16.0f, 2.35f, 0f));
+            InstantiatePrefab(p.Coin, z1, new Vector3(15.3f, 2.90f, 0f));
+            InstantiatePrefab(p.Coin, z1, new Vector3(16.7f, 2.90f, 0f));
 
-            Transform hazardsSection = CreateSection("=== HAZARDS & INTERACTIVES ===");
-            InstantiatePrefab(p.GoldenKey, hazardsSection, new Vector3(3.2f, -0.95f, 0f));
-            InstantiatePrefab(p.VictoryGoal, hazardsSection, new Vector3(6.5f, -1.12f, 0f));
-            CreateKillZone("KillZone", hazardsSection, new Vector3(0f, -12f, 0f), new Vector2(200f, 2f));
+            // KHU 2: Thung Lũng Suối Đá (20.5 .. 46.5, topY = -1.5)
+            Transform z2 = CreateSection("=== ZONE 2 - THUNG LUNG SUOI DA ===");
+            CreateTiledGround("Ground_Zone2", z2, 33.5f, -1.5f, 26, 3, donors);
+            InstantiatePrefab(p.Checkpoint, z2, new Vector3(22.0f, -1.031f, 0f));
+            InstantiatePrefab(p.Spike, z2, new Vector3(25.5f, -1.125f, 0f));
+            InstantiatePrefab(p.OneWayPlatform, z2, new Vector3(25.5f, 0.45f, 0f));
+            InstantiatePrefab(p.Coin, z2, new Vector3(24.9f, 1.00f, 0f));
+            InstantiatePrefab(p.Coin, z2, new Vector3(26.1f, 1.00f, 0f));
+            CreateTiledStoneWall("Wall_Divider_Z2", z2, 27.5f, -1.5f, 1, donors);
+            InstantiateEnemyOnSurface(p.EnemyRed, z2, 31.5f, -1.5f);
+            // Thùng thuốc nổ chiến thuật cạnh EnemyRed để kích nổ diện rộng
+            InstantiatePrefab(p.ExplosiveBarrel, z2, new Vector3(33.0f, -1.12f, 0f));
+            InstantiatePrefab(p.Ladder, z2, new Vector3(35.5f, 0.50f, 0f));
+            InstantiatePrefab(p.OneWayPlatform, z2, new Vector3(35.5f, 2.35f, 0f));
+            InstantiatePrefab(p.Coin, z2, new Vector3(34.6f, 2.90f, 0f));
+            InstantiatePrefab(p.SilverKey, z2, new Vector3(35.5f, 2.95f, 0f));
+            InstantiatePrefab(p.FoodCake, z2, new Vector3(36.4f, 2.95f, 0f));
+            InstantiateEnemyOnSurface(p.EnemyTiny, z2, 41.5f, -1.5f);
+            InstantiatePrefab(p.HealthPickup, z2, new Vector3(45.0f, -1.12f, 0f));
+
+            // KHU 3: Đài Cổ Thụ & Pháp Sư (MovingPlatform 48.2..51.8 -> Ground 53.5..77.5, topY = -1.5)
+            Transform z3 = CreateSection("=== ZONE 3 - DAI CO THU & PHAP SU ===");
+            CreateMovingPlatformSystem(z3, new Vector3(48.2f, -1.75f, 0f), new Vector3(51.8f, -1.75f, 0f), donors);
+            CreateTiledGround("Ground_Zone3", z3, 65.5f, -1.5f, 24, 3, donors);
+            InstantiatePrefab(p.Checkpoint, z3, new Vector3(55.0f, -1.031f, 0f));
+            InstantiatePrefab(p.SilverChest, z3, new Vector3(57.2f, -1.12f, 0f));
+            InstantiatePrefab(p.OneWayPlatform, z3, new Vector3(61.5f, 0.55f, 0f));
+            InstantiatePrefab(p.Coin, z3, new Vector3(60.9f, 1.10f, 0f));
+            InstantiatePrefab(p.Coin, z3, new Vector3(62.1f, 1.10f, 0f));
+            InstantiateEnemyOnSurface(p.EnemyBear, z3, 62.5f, -1.5f);
+            // Thùng nổ ở giữa đài cổ thụ
+            InstantiatePrefab(p.ExplosiveBarrel, z3, new Vector3(66.0f, -1.12f, 0f));
+            InstantiateEnemyOnSurface(p.EnemyMage, z3, 69.5f, -1.5f);
+            InstantiatePrefab(p.OneWayPlatform, z3, new Vector3(69.5f, 1.60f, 0f));
+            InstantiatePrefab(p.RockPickup, z3, new Vector3(68.9f, 2.08f, 0f));
+            InstantiatePrefab(p.FoodMeat, z3, new Vector3(70.0f, 2.15f, 0f));
+            InstantiatePrefab(p.JumpPad, z3, new Vector3(74.8f, -1.5f, 0f));
+            InstantiatePrefab(p.OneWayPlatform, z3, new Vector3(77.0f, 0.0f, 0f));
+
+            // KHU 4: Đèo Gió Cao Nguyên (78.5 .. 94.5, topY = +1.5)
+            Transform z4 = CreateSection("=== ZONE 4 - DEO GIO CAO NGUYEN ===");
+            CreateTiledGround("Ground_Zone4", z4, 86.5f, 1.5f, 16, 3, donors);
+            InstantiatePrefab(p.Checkpoint, z4, new Vector3(80.0f, 1.969f, 0f));
+            InstantiatePrefab(p.FallingPlatform, z4, new Vector3(84.5f, 3.40f, 0f));
+            InstantiatePrefab(p.Coin, z4, new Vector3(84.5f, 4.15f, 0f));
+            InstantiatePrefab(p.FallingPlatform, z4, new Vector3(87.5f, 3.40f, 0f));
+            InstantiatePrefab(p.FoodCookies, z4, new Vector3(87.5f, 4.15f, 0f));
+            InstantiateEnemyOnSurface(p.EnemyOoze, z4, 84.5f, 1.5f);
+            InstantiateEnemyOnSurface(p.EnemyTiny, z4, 90.0f, 1.5f);
+            InstantiatePrefab(p.HealthPickup, z4, new Vector3(92.8f, 1.88f, 0f));
+            InstantiatePrefab(p.RockPickup, z4, new Vector3(93.6f, 1.82f, 0f));
+
+            // KHU 5: Đấu Trường Rương Vàng (97.5 .. 119.5, topY = 0.0)
+            Transform z5 = CreateSection("=== ZONE 5 - DAU TRUONG RUONG VANG ===");
+            CreateTiledGround("Ground_Zone5", z5, 108.5f, 0.0f, 22, 3, donors);
+            InstantiatePrefab(p.OneWayPlatform, z5, new Vector3(102.5f, 2.00f, 0f));
+            InstantiatePrefab(p.Coin, z5, new Vector3(102.0f, 2.55f, 0f));
+            InstantiatePrefab(p.Coin, z5, new Vector3(103.0f, 2.55f, 0f));
+            InstantiateEnemyOnSurface(p.EnemyYellow, z5, 105.0f, 0.0f);
+            // Thùng nổ đấu trường cuối
+            InstantiatePrefab(p.ExplosiveBarrel, z5, new Vector3(108.0f, 0.38f, 0f));
+            InstantiateEnemyOnSurface(p.EnemyMage, z5, 111.5f, 0.0f);
+            InstantiatePrefab(p.OneWayPlatform, z5, new Vector3(111.5f, 2.00f, 0f));
+            InstantiatePrefab(p.Coin, z5, new Vector3(110.6f, 2.55f, 0f));
+            InstantiatePrefab(p.GoldenKey, z5, new Vector3(111.5f, 2.60f, 0f));
+            InstantiatePrefab(p.Coin, z5, new Vector3(112.4f, 2.55f, 0f));
+            InstantiatePrefab(p.VictoryGoal, z5, new Vector3(116.5f, 0.38f, 0f));
+            CreateTiledStoneWall("Wall_End", z5, 118.8f, 0.0f, 6, donors);
+
+            Transform hazardsSection = CreateSection("=== HAZARDS & BOUNDS ===");
+            CreateKillZone("KillZone", hazardsSection, new Vector3(56f, -10f, 0f), new Vector2(220f, 3f));
 
             Transform uiRoot = CreateSection("=== UI ===");
             AttachUIAndEventSystem(uiRoot, UISetupTool.PrefabGameplayUIPath, "Gameplay_HUD_Root");
@@ -702,17 +1126,17 @@ namespace Platformer2D.EditorTools
             CreateGroundProp("Prop_Z3_SignJump", bgSection, SpriteSignJumpUp, 23.6f, -1.5f, donors, -6);
             CreateGroundProp("Prop_Z3_Grass", bgSection, SpriteGrass6, 27.0f, -1.5f, donors, -5);
             CreateGroundProp("Prop_Z3_RockSmall", bgSection, SpriteRockSmall2, 30.2f, -1.5f, donors, -6);
-            // Zone 4 props (Floor_Zone4: 52 .. 78)
+            // Zone 4 props (Floor_Zone4: 52 .. 84)
             CreateGroundProp("Prop_Z4_BackTreeA", bgSection, SpriteTreeBack1, 57.5f, -1.5f, donors, -14, 1f, false, backTreeTint);
             CreateGroundProp("Prop_Z4_BackTreeB", bgSection, SpriteTreeBack3, 66.2f, -1.5f, donors, -14, 1f, true, backTreeTint);
-            CreateGroundProp("Prop_Z4_BackTreeC", bgSection, SpriteTreeBack4, 74.2f, -1.5f, donors, -14, 1f, false, backTreeTint);
+            CreateGroundProp("Prop_Z4_BackTreeC", bgSection, SpriteTreeBack4, 75.5f, -1.5f, donors, -14, 1f, false, backTreeTint);
             CreateGroundProp("Prop_Z4_TreeA", bgSection, SpriteTree2, 53.8f, -1.5f, donors, -8);
             CreateGroundProp("Prop_Z4_GrassA", bgSection, SpriteGrass2, 55.3f, -1.5f, donors, -5);
-            CreateGroundProp("Prop_Z4_RockBig", bgSection, SpriteRockBig2, 62.0f, -1.5f, donors, -7);
+            CreateGroundProp("Prop_Z4_RockBig", bgSection, SpriteRockBig2, 61.8f, -1.5f, donors, -7);
             CreateGroundProp("Prop_Z4_Rock", bgSection, SpriteRockSmall, 63.8f, -1.5f, donors, -6);
-            CreateGroundProp("Prop_Z4_GrassB", bgSection, SpriteGrass4, 68.2f, -1.5f, donors, -5, 1f, true);
-            CreateGroundProp("Prop_Z4_TreeB", bgSection, SpriteTree4, 71.8f, -1.5f, donors, -8, 1f, true);
-            CreateGroundProp("Prop_Z4_SignGoal", bgSection, SpriteSignRight, 73.6f, -1.5f, donors, -6);
+            CreateGroundProp("Prop_Z4_GrassB", bgSection, SpriteGrass4, 71.2f, -1.5f, donors, -5, 1f, true);
+            CreateGroundProp("Prop_Z4_TreeB", bgSection, SpriteTree4, 77.5f, -1.5f, donors, -8, 1f, true);
+            CreateGroundProp("Prop_Z4_SignGoal", bgSection, SpriteSignRight, 80.2f, -1.5f, donors, -6);
 
             Transform playerSection = CreateSection("=== PLAYER ===");
             Vector3 playerStartPos = new Vector3(0f, -0.5f, 0f);
@@ -724,7 +1148,7 @@ namespace Platformer2D.EditorTools
 
             // ZONE 1: Chạy, 2x Cầu thang (Ladder + One-Way), Nhặt đá & 2x Thùng gỗ (Đẩy kê chân / Đập vỡ)
             Transform z1 = CreateSection("=== ZONE 1 - LOCOMOTION, LADDER, CRATE ===");
-            CreateTiledGround("Floor_Zone1", z1, -1f, -1.5f, 18, 5, donors);
+            CreateTiledGround("Floor_Zone1", z1, -1f, -1.5f, 18, 3, donors);
             // Cặp thang #1 & #2 để test leo/tụt 2 lần
             InstantiatePrefab(p.Ladder, z1, new Vector3(-3.2f, 0.5f, 0f));
             InstantiatePrefab(p.OneWayPlatform, z1, new Vector3(-3.2f, 2.35f, 0f));
@@ -745,7 +1169,7 @@ namespace Platformer2D.EditorTools
 
             // ZONE 2: Double Jump 3 tầng & 2 tuyến Air Dash vượt khoảng trống
             Transform z2 = CreateSection("=== ZONE 2 - DOUBLE JUMP & AIR DASH ===");
-            CreateTiledGround("Floor_Zone2", z2, 15.0f, -1.5f, 14, 5, donors);
+            CreateTiledGround("Floor_Zone2", z2, 15.0f, -1.5f, 14, 3, donors);
             InstantiatePrefab(p.OneWayPlatform, z2, new Vector3(10.0f, 0.35f, 0f));
             InstantiatePrefab(p.Coin, z2, new Vector3(10.0f, 0.90f, 0f));
             InstantiatePrefab(p.OneWayPlatform, z2, new Vector3(14.5f, 2.05f, 0f));
@@ -766,7 +1190,7 @@ namespace Platformer2D.EditorTools
 
             // ZONE 3: Checkpoint #1, 2x Bệ nhún (JumpPad), 2x Sàn sụp lún (Falling), 2x Sàn di chuyển (MovingPlatform)
             Transform z3 = CreateSection("=== ZONE 3 - PLATFORMS (JUMPPAD, FALLING, MOVING) ===");
-            CreateTiledGround("Floor_JumpPadBase", z3, 26.5f, -1.5f, 9, 5, donors);
+            CreateTiledGround("Floor_JumpPadBase", z3, 26.5f, -1.5f, 9, 3, donors);
             InstantiatePrefab(p.Checkpoint, z3, new Vector3(22.8f, -1.031f, 0f));
             InstantiatePrefab(p.JumpPad, z3, new Vector3(25.0f, -1.5f, 0f));
             InstantiatePrefab(p.OneWayPlatform, z3, new Vector3(25.0f, 2.20f, 0f));
@@ -783,9 +1207,9 @@ namespace Platformer2D.EditorTools
             CreateMovingPlatformSystem(z3, new Vector3(39.6f, -1.75f, 0f), new Vector3(42.6f, -1.75f, 0f), donors);
             CreateMovingPlatformSystem(z3, new Vector3(46.2f, -1.75f, 0f), new Vector3(49.4f, -1.75f, 0f), donors);
 
-            // ZONE 4: Checkpoint #2, 2x Bẫy gai & Hồi máu, Đá ném, 2x Quái tuần tra & Điểm thắng
+            // ZONE 4: Checkpoint #2, 2x Bẫy gai & Hồi máu, Vách ngăn gai, Đủ 6 loại Quái & Điểm thắng
             Transform z4 = CreateSection("=== ZONE 4 - CHECKPOINT, HAZARDS, ITEMS & COMBAT ===");
-            CreateTiledGround("Floor_Zone4", z4, 65.0f, -1.5f, 26, 5, donors);
+            CreateTiledGround("Floor_Zone4", z4, 68.0f, -1.5f, 32, 3, donors);
             InstantiatePrefab(p.Checkpoint, z4, new Vector3(53.0f, -1.031f, 0f));
             InstantiatePrefab(p.RockPickup, z4, new Vector3(54.2f, -1.18f, 0f));
             InstantiatePrefab(p.Coin, z4, new Vector3(54.9f, -0.95f, 0f));
@@ -794,24 +1218,28 @@ namespace Platformer2D.EditorTools
             InstantiatePrefab(p.Spike, z4, new Vector3(56.8f, -1.125f, 0f));
             InstantiatePrefab(p.HealthPickup, z4, new Vector3(58.3f, -1.12f, 0f));
             InstantiatePrefab(p.Spike, z4, new Vector3(59.8f, -1.125f, 0f));
-            InstantiatePrefab(p.HealthPickup, z4, new Vector3(61.3f, -1.12f, 0f));
-            // Khu chiến đấu với 2x Quái tuần tra Ooze & Chìa khóa Vàng trên bệ chiến đấu (Lần test 2)
-            InstantiatePrefab(p.RockPickup, z4, new Vector3(62.6f, -1.18f, 0f));
-            InstantiatePrefab(p.EnemyOoze, z4, new Vector3(65.5f, -1.14f, 0f));
-            InstantiatePrefab(p.OneWayPlatform, z4, new Vector3(67.8f, 1.25f, 0f));
-            InstantiatePrefab(p.Coin, z4, new Vector3(66.9f, 1.80f, 0f));
-            InstantiatePrefab(p.GoldenKey, z4, new Vector3(67.8f, 1.85f, 0f));
-            InstantiatePrefab(p.Coin, z4, new Vector3(68.7f, 1.80f, 0f));
-            InstantiatePrefab(p.EnemyOoze, z4, new Vector3(70.2f, -1.14f, 0f));
-            InstantiatePrefab(p.Coin, z4, new Vector3(72.0f, -0.95f, 0f));
-            InstantiatePrefab(p.Coin, z4, new Vector3(72.7f, -0.95f, 0f));
+            InstantiatePrefab(p.HealthPickup, z4, new Vector3(61.1f, -1.12f, 0f));
+            // Trụ đá thấp ngăn cách khu bẫy gai khỏi khu vực chiến đấu của Quái
+            CreateTiledStoneWall("Wall_HazardDivider", z4, 62.2f, -1.5f, 1, donors);
+            // Khu chiến đấu với đủ 6 chủng loại Quái & Chìa khóa Vàng trên bệ cao
+            InstantiatePrefab(p.RockPickup, z4, new Vector3(63.4f, -1.18f, 0f));
+            InstantiateEnemyOnSurface(p.EnemyOoze, z4, 64.8f, -1.5f);
+            InstantiateEnemyOnSurface(p.EnemyRed, z4, 67.4f, -1.5f);
+            InstantiatePrefab(p.OneWayPlatform, z4, new Vector3(70.0f, 1.25f, 0f));
+            InstantiatePrefab(p.Coin, z4, new Vector3(69.1f, 1.80f, 0f));
+            InstantiatePrefab(p.GoldenKey, z4, new Vector3(70.0f, 1.85f, 0f));
+            InstantiatePrefab(p.Coin, z4, new Vector3(70.9f, 1.80f, 0f));
+            InstantiateEnemyOnSurface(p.EnemyTiny, z4, 70.2f, -1.5f);
+            InstantiateEnemyOnSurface(p.EnemyMage, z4, 73.4f, -1.5f);
+            InstantiateEnemyOnSurface(p.EnemyBear, z4, 76.2f, -1.5f);
+            InstantiateEnemyOnSurface(p.EnemyYellow, z4, 79.2f, -1.5f);
             // Điểm chiến thắng cuối màn (Rương vàng)
-            InstantiatePrefab(p.VictoryGoal, z4, new Vector3(75.5f, -1.12f, 0f));
-            CreateTiledStoneWall("Wall_ArenaEnd", z4, 77.6f, -1.5f, 5, donors);
+            InstantiatePrefab(p.VictoryGoal, z4, new Vector3(81.8f, -1.12f, 0f));
+            CreateTiledStoneWall("Wall_ArenaEnd", z4, 83.6f, -1.5f, 5, donors);
 
             // HAZARDS & BOUNDS
             Transform hazards = CreateSection("=== HAZARDS & BOUNDS ===");
-            CreateKillZone("KillZone", hazards, new Vector3(34f, -8f, 0f), new Vector2(168f, 2f));
+            CreateKillZone("KillZone", hazards, new Vector3(38f, -8f, 0f), new Vector2(180f, 2f));
 
             // UI
             Transform uiRoot = CreateSection("=== UI ===");
@@ -893,7 +1321,8 @@ namespace Platformer2D.EditorTools
             float localTopY,
             DonorAssets donors,
             int sortingOrder,
-            string prefix = "Tile")
+            string prefix = "Tile",
+            bool isStatic = false)
         {
             if (tileCount <= 0) return 0f;
 
@@ -931,11 +1360,14 @@ namespace Platformer2D.EditorTools
                 Sprite sp = picked[i];
                 GameObject tileObj = new GameObject($"{prefix}_{i:00}");
                 tileObj.transform.SetParent(parent, false);
+                if (isStatic) tileObj.isStatic = true;
 
                 SpriteRenderer sr = tileObj.AddComponent<SpriteRenderer>();
                 sr.sprite = sp;
                 if (donors.SpriteMaterial != null) sr.sharedMaterial = donors.SpriteMaterial;
                 sr.sortingOrder = sortingOrder;
+                sr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                sr.receiveShadows = false;
 
                 if (sp != null)
                 {
@@ -966,9 +1398,11 @@ namespace Platformer2D.EditorTools
         {
             GameObject root = new GameObject(name);
             root.transform.SetParent(parent, false);
+            root.isStatic = true;
 
             GameObject visuals = new GameObject("Visuals");
             visuals.transform.SetParent(root.transform, false);
+            visuals.isStatic = true;
 
             float width = tileCols;
             if (tileRows <= 1)
@@ -984,10 +1418,12 @@ namespace Platformer2D.EditorTools
                     height * 0.5f,
                     donors,
                     0,
-                    "Row0_Tile");
+                    "Row0_Tile",
+                    isStatic: true);
 
                 BoxCollider2D col = root.AddComponent<BoxCollider2D>();
                 col.size = new Vector2(width > 0f ? width : tileCols, height);
+                if (donors.FrictionlessMaterial != null) col.sharedMaterial = donors.FrictionlessMaterial;
                 return;
             }
 
@@ -1010,15 +1446,15 @@ namespace Platformer2D.EditorTools
                 float rowWidth;
                 if (r == 0)
                 {
-                    rowWidth = BuildHorizontalTileStrip(visuals.transform, tileCols, topL, topM, topR, rowTopY, donors, 0, $"Row{r}_Tile");
+                    rowWidth = BuildHorizontalTileStrip(visuals.transform, tileCols, topL, topM, topR, rowTopY, donors, 0, $"Row{r}_Tile", isStatic: true);
                 }
                 else if (r == tileRows - 1)
                 {
-                    rowWidth = BuildHorizontalTileStrip(visuals.transform, tileCols, botL, botM, botR, rowTopY, donors, 0, $"Row{r}_Tile");
+                    rowWidth = BuildHorizontalTileStrip(visuals.transform, tileCols, botL, botM, botR, rowTopY, donors, 0, $"Row{r}_Tile", isStatic: true);
                 }
                 else
                 {
-                    rowWidth = BuildHorizontalTileStrip(visuals.transform, tileCols, fillL, fillM, fillR, rowTopY, donors, 0, $"Row{r}_Tile");
+                    rowWidth = BuildHorizontalTileStrip(visuals.transform, tileCols, fillL, fillM, fillR, rowTopY, donors, 0, $"Row{r}_Tile", isStatic: true);
                 }
 
                 if (r == 0 && rowWidth > 0f)
@@ -1029,6 +1465,7 @@ namespace Platformer2D.EditorTools
 
             BoxCollider2D groundCol = root.AddComponent<BoxCollider2D>();
             groundCol.size = new Vector2(width, totalHeight);
+            if (donors.FrictionlessMaterial != null) groundCol.sharedMaterial = donors.FrictionlessMaterial;
         }
 
         private static void CreateTiledStoneWall(
@@ -1043,11 +1480,13 @@ namespace Platformer2D.EditorTools
 
             GameObject root = new GameObject(name);
             root.transform.SetParent(parent, false);
+            root.isStatic = true;
             float totalHeight = tileRows;
             root.transform.position = new Vector3(centerX, bottomY + totalHeight * 0.5f, 0f);
 
             GameObject visuals = new GameObject("Visuals");
             visuals.transform.SetParent(root.transform, false);
+            visuals.isStatic = true;
 
             Sprite topSp = LoadFirstSprite(SpriteFieldWallTop);
             Sprite midSp = LoadFirstSprite(SpriteFieldWallMid);
@@ -1060,11 +1499,14 @@ namespace Platformer2D.EditorTools
 
                 GameObject tileObj = new GameObject($"WallTile_{r:00}");
                 tileObj.transform.SetParent(visuals.transform, false);
+                tileObj.isStatic = true;
 
                 SpriteRenderer sr = tileObj.AddComponent<SpriteRenderer>();
                 sr.sprite = sp;
                 if (donors.SpriteMaterial != null) sr.sharedMaterial = donors.SpriteMaterial;
                 sr.sortingOrder = 0;
+                sr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                sr.receiveShadows = false;
 
                 float topY = totalHeight * 0.5f - r;
                 float localY = sp != null ? topY - sp.bounds.max.y : topY - 0.5f;
@@ -1073,6 +1515,7 @@ namespace Platformer2D.EditorTools
 
             BoxCollider2D col = root.AddComponent<BoxCollider2D>();
             col.size = new Vector2(0.88f, totalHeight);
+            if (donors.FrictionlessMaterial != null) col.sharedMaterial = donors.FrictionlessMaterial;
         }
 
         private static readonly Color32 FieldBottomSkirtColor = new Color32(47, 88, 90, 255);

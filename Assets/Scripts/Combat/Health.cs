@@ -69,7 +69,15 @@ namespace Platformer2D.Combat
 
         public void TakeDamage(DamageData damageData)
         {
-            if (_isDead || _isInvulnerable) return;
+            bool isLethalFall = damageData.Type == DamageType.FallDamage || damageData.Amount >= 9999;
+            if (!isLethalFall)
+            {
+                if (_isDead || _isInvulnerable) return;
+            }
+            else
+            {
+                if (_isDead) return;
+            }
 
             _currentHealth = Mathf.Max(0, _currentHealth - damageData.Amount);
             OnHealthChanged?.Invoke(_currentHealth, _maxHealth);
@@ -87,10 +95,12 @@ namespace Platformer2D.Combat
                 _animator.SetTrigger(HurtHash);
             }
 
-            // Đẩy lùi (Knockback)
+            // Đẩy lùi (Knockback) - Giới hạn lực hất tung thẳng đứng để quái không bị hất bổng lên trời
             if (_rb != null && damageData.KnockbackForce != Vector2.zero)
             {
-                _rb.linearVelocity = damageData.KnockbackForce;
+                Vector2 kb = damageData.KnockbackForce;
+                kb.y = Mathf.Clamp(kb.y, -3f, 1.4f);
+                _rb.linearVelocity = kb;
             }
 
             // Kiểm tra tử vong
@@ -128,6 +138,29 @@ namespace Platformer2D.Combat
             }
         }
 
+        public void IncreaseMaxHealth(int amount)
+        {
+            if (amount <= 0) return;
+            _maxHealth += amount;
+            _currentHealth += amount;
+            OnHealthChanged?.Invoke(_currentHealth, _maxHealth);
+            if (_isPlayer)
+            {
+                EventBus.Publish(new PlayerHealthChangedEvent(_currentHealth, _maxHealth));
+            }
+        }
+
+        public void SetMaxHealth(int newMaxHealth)
+        {
+            _maxHealth = Mathf.Max(1, newMaxHealth);
+            _currentHealth = Mathf.Min(_currentHealth, _maxHealth);
+            OnHealthChanged?.Invoke(_currentHealth, _maxHealth);
+            if (_isPlayer)
+            {
+                EventBus.Publish(new PlayerHealthChangedEvent(_currentHealth, _maxHealth));
+            }
+        }
+
         private void Die()
         {
             if (_isDead) return;
@@ -159,17 +192,110 @@ namespace Platformer2D.Combat
             }
             else
             {
-                // Nếu là quái vật: tắt va chạm và tự hủy sau khi diễn xong anim
+                // Thưởng EXP và điểm khi quái vật bị tiêu diệt
+                int expReward = Mathf.Max(25, _maxHealth * 18);
+                int coinReward = Mathf.Max(1, _maxHealth * 2);
+                EventBus.Publish(new EnemyDefeatedEvent(transform.position, expReward, coinReward));
+
+                // Quái vật khi chết: Cho phép rơi tự nhiên chạm sàn nếu đang ở trên không, không để lơ lửng
                 var collider = GetComponent<Collider2D>();
-                if (collider != null) collider.enabled = false;
-                if (_rb != null) _rb.linearVelocity = Vector2.zero;
+                StartCoroutine(EnemyDeathPhysicsRoutine(collider));
 
                 if (_deathVfxPrefab != null)
                 {
                     Instantiate(_deathVfxPrefab, transform.position, Quaternion.identity);
                 }
 
-                Destroy(gameObject, 1.2f);
+                Destroy(gameObject, 1.4f);
+            }
+        }
+
+        private IEnumerator EnemyDeathPhysicsRoutine(Collider2D myCollider)
+        {
+            // 1. Tắt va chạm vật lý ngay lập tức để không cản trở người chơi hay vật thể khác
+            if (myCollider != null)
+            {
+                myCollider.enabled = false;
+            }
+
+            // 2. Chuyển sang Kinematic để script tự điều khiển căn chỉnh vị trí tuyệt đối, không bị vật lý rung giật hay đẩy ngược
+            if (_rb != null)
+            {
+                _rb.linearVelocity = Vector2.zero;
+                _rb.bodyType = RigidbodyType2D.Kinematic;
+            }
+
+            // 3. Quét tia dò tìm mặt sàn vững chắc gần nhất bên dưới (bỏ qua Trigger và các vật thể con)
+            float groundSurfaceY = float.MinValue;
+            RaycastHit2D[] hits = Physics2D.RaycastAll(transform.position + Vector3.up * 0.25f, Vector2.down, 15f);
+            for (int i = 0; i < hits.Length; i++)
+            {
+                RaycastHit2D h = hits[i];
+                if (h.collider == null || h.collider == myCollider || h.collider.transform.IsChildOf(transform)) continue;
+                if (h.collider.isTrigger) continue; // Bỏ qua nhặt đá, coin, checkpoint, vùng trigger
+                if (h.normal.y > 0.55f) // Bề mặt sàn hướng lên
+                {
+                    groundSurfaceY = h.point.y;
+                    break;
+                }
+            }
+
+            // 4. Nếu tìm thấy sàn: Giả lập rơi tự do mượt mà nếu đang ở trên không, và trên TỪNG FRAME căn chỉnh
+            // đáy SpriteRenderer bám khít chính xác mặt sàn (kể cả khi animation chết chuyển từ đứng sang nằm bẹp)
+            float fallSpeed = 0f;
+            float deathTimer = 0f;
+            const float totalDeathDuration = 1.35f;
+
+            while (deathTimer < totalDeathDuration)
+            {
+                deathTimer += Time.deltaTime;
+
+                if (groundSurfaceY > float.MinValue + 1f && _spriteRenderer != null)
+                {
+                    float currentBottom = _spriteRenderer.bounds.min.y;
+                    float desiredBottom = groundSurfaceY + 0.015f;
+
+                    // Nếu xác còn ở trên không (ví dụ bị đánh văng lên trời) -> rơi xuống theo gia tốc trọng lực
+                    if (currentBottom > desiredBottom + 0.02f)
+                    {
+                        fallSpeed += 24f * Time.deltaTime;
+                        float nextBottom = currentBottom - fallSpeed * Time.deltaTime;
+                        if (nextBottom <= desiredBottom)
+                        {
+                            transform.position += Vector3.down * (currentBottom - desiredBottom);
+                            fallSpeed = 0f;
+                        }
+                        else
+                        {
+                            transform.position += Vector3.down * (fallSpeed * Time.deltaTime);
+                        }
+                    }
+                    else
+                    {
+                        // Đã tiếp đất: Giữ đáy sprite dính khít mặt cỏ trên TẤT CẢ các frame của clip chết
+                        float deltaY = currentBottom - desiredBottom;
+                        if (Mathf.Abs(deltaY) > 0.002f)
+                        {
+                            transform.position += Vector3.down * deltaY;
+                        }
+                    }
+                }
+                else if (groundSurfaceY <= float.MinValue + 1f)
+                {
+                    // Rơi xuống vực sâu (không có sàn)
+                    transform.position += Vector3.down * (8f * Time.deltaTime);
+                }
+
+                // 0.35 giây cuối cùng: Mờ dần (Fade out alpha) trước khi biến mất sạch sẽ
+                if (deathTimer > 0.95f && _spriteRenderer != null)
+                {
+                    float fadeProgress = (deathTimer - 0.95f) / 0.4f;
+                    Color c = _spriteRenderer.color;
+                    c.a = Mathf.Lerp(_originalColor.a, 0f, fadeProgress);
+                    _spriteRenderer.color = c;
+                }
+
+                yield return null;
             }
         }
 

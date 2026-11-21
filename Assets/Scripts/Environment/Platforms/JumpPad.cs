@@ -40,10 +40,19 @@ namespace Platformer2D.Environment.Platforms
 
         private void TryBounce(GameObject target)
         {
-            if (!target.CompareTag("Player")) return;
-
             Rigidbody2D rb = target.GetComponent<Rigidbody2D>();
-            if (rb != null)
+            if (rb == null) return;
+
+            // Kiểm tra xem đối tượng có đang rơi xuống hoặc chạm mặt trên của bệ nhún không
+            Collider2D targetCol = target.GetComponent<Collider2D>();
+            Collider2D myCol = GetComponent<Collider2D>();
+            if (targetCol != null && myCol != null)
+            {
+                // Chỉ nảy khi đối tượng ở phía trên nấm
+                if (targetCol.bounds.min.y < myCol.bounds.center.y) return;
+            }
+
+            if (target.CompareTag("Player"))
             {
                 rb.linearVelocityY = _bounceForce;
 
@@ -56,13 +65,18 @@ namespace Platformer2D.Environment.Platforms
                         player.ResetAirJumps();
                     }
                 }
-
-                // Hiệu ứng lò xo co giãn
-                if (_squashCoroutine != null) StopCoroutine(_squashCoroutine);
-                _squashCoroutine = StartCoroutine(SquashRoutine());
-
-                EventBus.Publish(new PlaySoundEvent(_bounceSound, SoundType.SFX, transform.position));
             }
+            else
+            {
+                // Nảy cả quái vật hoặc khối đá/thùng gỗ khi rơi vào nấm
+                rb.linearVelocityY = _bounceForce * 0.82f;
+            }
+
+            // Hiệu ứng lò xo co giãn (Squash & Stretch)
+            if (_squashCoroutine != null) StopCoroutine(_squashCoroutine);
+            _squashCoroutine = StartCoroutine(SquashRoutine());
+
+            EventBus.Publish(new PlaySoundEvent(_bounceSound, SoundType.SFX, transform.position));
         }
 
         private IEnumerator SquashRoutine()
