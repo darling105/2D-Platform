@@ -218,30 +218,54 @@ namespace Platformer2D.Combat
                 myCollider.enabled = false;
             }
 
-            // 2. Chuyển sang Kinematic để script tự điều khiển căn chỉnh vị trí tuyệt đối, không bị vật lý rung giật hay đẩy ngược
+            // Tắt các component gây sát thương nếu có
+            var damageDealer = GetComponent<DamageDealer>();
+            if (damageDealer != null) damageDealer.enabled = false;
+
+            // 2. Tắt hoàn toàn physics simulation để script toàn quyền điều khiển transform mà không bị Rigidbody2D khóa/ghi đè vị trí
             if (_rb != null)
             {
                 _rb.linearVelocity = Vector2.zero;
-                _rb.bodyType = RigidbodyType2D.Kinematic;
+                _rb.angularVelocity = 0f;
+                _rb.simulated = false;
             }
 
-            // 3. Quét tia dò tìm mặt sàn vững chắc gần nhất bên dưới (bỏ qua Trigger và các vật thể con)
+            // 3. Xác định cao độ mặt sàn bên dưới:
+            // Khởi tạo mặt sàn mặc định từ đáy collider hiện tại (nếu đang đứng trên sàn)
             float groundSurfaceY = float.MinValue;
-            RaycastHit2D[] hits = Physics2D.RaycastAll(transform.position + Vector3.up * 0.25f, Vector2.down, 15f);
+            if (myCollider != null)
+            {
+                groundSurfaceY = myCollider.bounds.min.y;
+            }
+
+            // Quét tia dò tìm mặt sàn vững chắc bên dưới (bỏ qua Trigger, người chơi và quái khác)
+            Vector3 rayStart = transform.position + Vector3.up * 0.4f;
+            RaycastHit2D[] hits = Physics2D.RaycastAll(rayStart, Vector2.down, 16f);
+            float bestRayY = float.MinValue;
             for (int i = 0; i < hits.Length; i++)
             {
                 RaycastHit2D h = hits[i];
                 if (h.collider == null || h.collider == myCollider || h.collider.transform.IsChildOf(transform)) continue;
-                if (h.collider.isTrigger) continue; // Bỏ qua nhặt đá, coin, checkpoint, vùng trigger
-                if (h.normal.y > 0.55f) // Bề mặt sàn hướng lên
+                if (h.collider.isTrigger) continue;
+                if (h.collider.CompareTag("Player") || h.collider.GetComponent<Health>() != null) continue;
+                if (h.normal.y > 0.45f) // Bề mặt sàn hướng lên
                 {
-                    groundSurfaceY = h.point.y;
-                    break;
+                    if (h.point.y <= transform.position.y + 0.25f && h.point.y > bestRayY)
+                    {
+                        bestRayY = h.point.y;
+                    }
                 }
             }
 
-            // 4. Nếu tìm thấy sàn: Giả lập rơi tự do mượt mà nếu đang ở trên không, và trên TỪNG FRAME căn chỉnh
-            // đáy SpriteRenderer bám khít chính xác mặt sàn (kể cả khi animation chết chuyển từ đứng sang nằm bẹp)
+            if (bestRayY > float.MinValue + 1f)
+            {
+                groundSurfaceY = bestRayY;
+            }
+
+            // Chờ 1 frame để Animator chuyển sang clip Death và cập nhật SpriteRenderer.sprite
+            yield return null;
+
+            // 4. Giả lập rơi nếu ở trên không, và trên TỪNG FRAME căn chỉnh đáy SpriteRenderer bám khít chính xác mặt sàn
             float fallSpeed = 0f;
             float deathTimer = 0f;
             const float totalDeathDuration = 1.35f;
@@ -250,31 +274,31 @@ namespace Platformer2D.Combat
             {
                 deathTimer += Time.deltaTime;
 
-                if (groundSurfaceY > float.MinValue + 1f && _spriteRenderer != null)
+                if (groundSurfaceY > float.MinValue + 1f && _spriteRenderer != null && _spriteRenderer.sprite != null)
                 {
                     float currentBottom = _spriteRenderer.bounds.min.y;
                     float desiredBottom = groundSurfaceY + 0.015f;
 
                     // Nếu xác còn ở trên không (ví dụ bị đánh văng lên trời) -> rơi xuống theo gia tốc trọng lực
-                    if (currentBottom > desiredBottom + 0.02f)
+                    if (currentBottom > desiredBottom + 0.05f)
                     {
-                        fallSpeed += 24f * Time.deltaTime;
-                        float nextBottom = currentBottom - fallSpeed * Time.deltaTime;
-                        if (nextBottom <= desiredBottom)
+                        fallSpeed += 22f * Time.deltaTime;
+                        float step = fallSpeed * Time.deltaTime;
+                        if (currentBottom - step <= desiredBottom)
                         {
                             transform.position += Vector3.down * (currentBottom - desiredBottom);
                             fallSpeed = 0f;
                         }
                         else
                         {
-                            transform.position += Vector3.down * (fallSpeed * Time.deltaTime);
+                            transform.position += Vector3.down * step;
                         }
                     }
                     else
                     {
                         // Đã tiếp đất: Giữ đáy sprite dính khít mặt cỏ trên TẤT CẢ các frame của clip chết
                         float deltaY = currentBottom - desiredBottom;
-                        if (Mathf.Abs(deltaY) > 0.002f)
+                        if (Mathf.Abs(deltaY) > 0.001f)
                         {
                             transform.position += Vector3.down * deltaY;
                         }
@@ -283,7 +307,7 @@ namespace Platformer2D.Combat
                 else if (groundSurfaceY <= float.MinValue + 1f)
                 {
                     // Rơi xuống vực sâu (không có sàn)
-                    transform.position += Vector3.down * (8f * Time.deltaTime);
+                    transform.position += Vector3.down * (7f * Time.deltaTime);
                 }
 
                 // 0.35 giây cuối cùng: Mờ dần (Fade out alpha) trước khi biến mất sạch sẽ

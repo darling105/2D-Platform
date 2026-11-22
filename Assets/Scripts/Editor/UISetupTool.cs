@@ -354,6 +354,7 @@ namespace Platformer2D.EditorTools
             GameObject canvasRoot = CreateCanvasRoot("GameplayUICanvas", 20);
             PlayerHUD hud = canvasRoot.AddComponent<PlayerHUD>();
             SkillTreePanelUI skillTreeUI = canvasRoot.AddComponent<SkillTreePanelUI>();
+            BossHealthBarUI bossHealthBar = canvasRoot.AddComponent<BossHealthBarUI>();
 
             // === A. TOP-LEFT: Chân dung Pink Monster & Thanh máu Pixel Art ===
             GameObject topLeft = new GameObject("TopLeft_Status");

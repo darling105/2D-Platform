@@ -330,4 +330,50 @@ namespace Platformer2D.Core.Architecture
     }
 
     #endregion
+
+    #region Boss Events
+
+    public readonly struct BossSpawnedEvent : IEvent
+    {
+        public readonly string BossName;
+        public readonly int CurrentHealth;
+        public readonly int MaxHealth;
+
+        public BossSpawnedEvent(string bossName, int currentHealth, int maxHealth)
+        {
+            BossName = bossName;
+            CurrentHealth = currentHealth;
+            MaxHealth = maxHealth;
+        }
+    }
+
+    public readonly struct BossHealthChangedEvent : IEvent
+    {
+        public readonly int CurrentHealth;
+        public readonly int MaxHealth;
+
+        public BossHealthChangedEvent(int currentHealth, int maxHealth)
+        {
+            CurrentHealth = currentHealth;
+            MaxHealth = maxHealth;
+        }
+    }
+
+    public readonly struct BossDefeatedEvent : IEvent
+    {
+        public readonly string BossName;
+        public readonly Vector3 Position;
+
+        public BossDefeatedEvent(string bossName, Vector3 position)
+        {
+            BossName = bossName;
+            Position = position;
+        }
+    }
+
+    public readonly struct BossHealthBarHideEvent : IEvent
+    {
+    }
+
+    #endregion
 }

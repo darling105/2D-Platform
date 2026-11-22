@@ -19,8 +19,8 @@ GameObject:
   - component: {fileID: 3078812808671349262}
   - component: {fileID: 7381710959250055579}
   - component: {fileID: 1435454459666263408}
-  - component: {fileID: 5638222703208636264}
   - component: {fileID: 889100223344556677}
+  - component: {fileID: 5638222703208636264}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -205,6 +205,7 @@ MonoBehaviour:
   _maxHealth: 3
   _invulnerabilityDuration: 0.8
   _hurtBlinkInterval: 0.08
+  _hurtFlashColor: {r: 1, g: 0.22, b: 0.22, a: 0.92}
 --- !u!114 &7333850220600675683
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -303,7 +304,7 @@ MonoBehaviour:
   _walkComboChainDelay: 0.16
   _attack2HitDamage: 1
   _attack2FirstHitKnockbackScale: 0.25
-  _attack2SecondHitKnockbackScale: 1.25
+  _attack2SecondHitKnockbackScale: 1
   _projectilePrefab: {fileID: 0}
   _startingRocks: 0
   _maxRocks: 15
@@ -322,6 +323,22 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: da4f46014e0c64e46ae8ff43d5352930, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Platformer2D.Player.Components.PlayerAnimationSync
+--- !u!114 &889100223344556677
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1990589011641405100}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: beb0d70b04b272845b8ea1a9856a3d7f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::Platformer2D.Player.Components.PlayerProgression
+  _currentStamina: 100
+  _currentLevel: 1
+  _currentExp: 0
+  _availableSkillPoints: 1
 --- !u!114 &5638222703208636264
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -446,19 +463,3 @@ MonoBehaviour:
   _shakeIntensity: 0.01
   _hitVfxPrefab: {fileID: 0}
   _hitSoundId: Hit
---- !u!114 &889100223344556677
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1990589011641405100}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: beb0d70b04b272845b8ea1a9856a3d7f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Platformer2D.Player.Components.PlayerProgression
-  _currentStamina: 100
-  _currentLevel: 1
-  _currentExp: 0
-  _availableSkillPoints: 1

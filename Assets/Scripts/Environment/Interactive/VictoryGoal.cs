@@ -33,6 +33,10 @@ namespace Platformer2D.Environment.Interactive
         [Tooltip("Tốc độ phát hoạt ảnh mở rương (FPS)")]
         [SerializeField] private float _openFrameRate = 14f;
 
+        [Header("Next Level Transition")]
+        [Tooltip("Tên scene tiếp theo sẽ tự động chuyển đến sau khi chiến thắng (để trống nếu là màn cuối)")]
+        [SerializeField] private string _nextSceneName = "";
+
         private SpriteRenderer _spriteRenderer;
         private float _groundBottomY;
         private float _lastLockedToastTime = -10f;
@@ -121,6 +125,22 @@ namespace Platformer2D.Environment.Interactive
             }
 
             yield return new WaitForSecondsRealtime(0.25f);
+
+            if (!string.IsNullOrEmpty(_nextSceneName))
+            {
+                EventBus.Publish(new HudToastMessageEvent($"CHIẾN THẮNG! ĐANG CHUYỂN TIẾP SANG {_nextSceneName.ToUpper()}...", new Color(0.4f, 1f, 0.5f, 1f)));
+                yield return new WaitForSecondsRealtime(2.2f);
+                if (SceneLoader.HasInstance)
+                {
+                    SceneLoader.Instance.LoadSceneAsync(_nextSceneName);
+                }
+                else
+                {
+                    Time.timeScale = 1f;
+                    UnityEngine.SceneManagement.SceneManager.LoadScene(_nextSceneName);
+                }
+                yield break;
+            }
 
             if (GameManager.HasInstance)
             {

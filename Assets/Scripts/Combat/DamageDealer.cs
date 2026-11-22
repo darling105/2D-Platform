@@ -51,6 +51,16 @@ namespace Platformer2D.Combat
             set => _damageAmount = value;
         }
 
+        public void Initialize(int damage, Vector2 knockbackDir, float knockbackH = 5f, float knockbackV = 1f, DamageType damageType = DamageType.Physical, GameObject owner = null, string targetTag = "Player")
+        {
+            _damageAmount = damage;
+            _knockbackHorizontal = knockbackH;
+            _knockbackVertical = knockbackV;
+            _damageType = damageType;
+            if (owner != null) _owner = owner;
+            _targetTag = targetTag;
+        }
+
         private void Awake()
         {
             if (_owner == null)

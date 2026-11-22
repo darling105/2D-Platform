@@ -418,8 +418,7 @@ namespace Platformer2D.UI
             Transform existingTabBar = root.Find("BranchTabBar");
             if (existingTabBar == null && _tabCombatButton == null)
             {
-                GameObject tabBar = new GameObject("BranchTabBar");
-                tabBar.transform.SetParent(root, false);
+                GameObject tabBar = CreateUIObject("BranchTabBar", root);
                 tabBar.transform.SetSiblingIndex(1); // Ngay dưới CoinsBalanceText
 
                 HorizontalLayoutGroup hlg = tabBar.AddComponent<HorizontalLayoutGroup>();
@@ -493,8 +492,7 @@ namespace Platformer2D.UI
             Transform existingBottom = root.Find("BottomActionRow");
             if (existingBottom == null && _resetTreeButton == null)
             {
-                GameObject btmRow = new GameObject("BottomActionRow");
-                btmRow.transform.SetParent(root, false);
+                GameObject btmRow = CreateUIObject("BottomActionRow", root);
                 HorizontalLayoutGroup btmHlg = btmRow.AddComponent<HorizontalLayoutGroup>();
                 btmHlg.spacing = 18f;
                 btmHlg.childAlignment = TextAnchor.MiddleCenter;
@@ -518,8 +516,7 @@ namespace Platformer2D.UI
             Transform existing = root.Find(name);
             if (existing != null) return existing.gameObject;
 
-            GameObject container = new GameObject(name);
-            container.transform.SetParent(root, false);
+            GameObject container = CreateUIObject(name, root);
 
             VerticalLayoutGroup vlg = container.AddComponent<VerticalLayoutGroup>();
             vlg.spacing = 10f;
@@ -532,10 +529,21 @@ namespace Platformer2D.UI
             return container;
         }
 
+        private static GameObject CreateUIObject(string name, Transform parent = null)
+        {
+            GameObject go = new GameObject(name, typeof(RectTransform));
+            if (parent != null) go.transform.SetParent(parent, false);
+            return go;
+        }
+
         private static RectTransform GetOrAddRectTransform(GameObject go)
         {
+            if (go == null) return null;
             RectTransform rt = go.GetComponent<RectTransform>();
-            if (rt == null) rt = go.AddComponent<RectTransform>();
+            if (rt == null)
+            {
+                rt = go.AddComponent<RectTransform>();
+            }
             return rt;
         }
 
@@ -548,8 +556,7 @@ namespace Platformer2D.UI
             {
                 if (!_playerProgression.Nodes.TryGetValue(nodeId, out var nodeData)) continue;
 
-                GameObject rowObj = new GameObject($"NodeRow_{nodeId}");
-                rowObj.transform.SetParent(container, false);
+                GameObject rowObj = CreateUIObject($"NodeRow_{nodeId}", container);
 
                 Image rowBg = rowObj.AddComponent<Image>();
                 rowBg.color = new Color(0.08f, 0.11f, 0.20f, 0.94f);
@@ -560,8 +567,7 @@ namespace Platformer2D.UI
                 Color branchColor = GetBranchColor(nodeData.BranchName);
 
                 // 1. Icon Box bên trái (68x68 px)
-                GameObject iconBoxObj = new GameObject("IconBox");
-                iconBoxObj.transform.SetParent(rowObj.transform, false);
+                GameObject iconBoxObj = CreateUIObject("IconBox", rowObj.transform);
                 RectTransform iconBoxRt = GetOrAddRectTransform(iconBoxObj);
                 iconBoxRt.anchorMin = new Vector2(0f, 0.5f);
                 iconBoxRt.anchorMax = new Vector2(0f, 0.5f);
@@ -573,8 +579,7 @@ namespace Platformer2D.UI
                 iconBoxBg.color = new Color(0.04f, 0.06f, 0.12f, 1f);
 
                 // Hình ảnh Skill Icon bên trong
-                GameObject iconImgObj = new GameObject("IconImage");
-                iconImgObj.transform.SetParent(iconBoxObj.transform, false);
+                GameObject iconImgObj = CreateUIObject("IconImage", iconBoxObj.transform);
                 Image iconImg = iconImgObj.AddComponent<Image>();
                 iconImg.sprite = GetNodeIcon(nodeId);
                 iconImg.preserveAspect = true;
@@ -585,8 +590,7 @@ namespace Platformer2D.UI
                 iconImgRt.sizeDelta = new Vector2(52f, 52f);
 
                 // Khung viền pixel frame bao quanh icon
-                GameObject frameObj = new GameObject("IconFrame");
-                frameObj.transform.SetParent(iconBoxObj.transform, false);
+                GameObject frameObj = CreateUIObject("IconFrame", iconBoxObj.transform);
                 Image frameImg = frameObj.AddComponent<Image>();
                 if (frameSprite != null)
                 {
@@ -604,8 +608,7 @@ namespace Platformer2D.UI
                 frameRt.offsetMax = Vector2.zero;
 
                 // 2. Tên & Chi nhánh
-                GameObject titleObj = new GameObject("Title");
-                titleObj.transform.SetParent(rowObj.transform, false);
+                GameObject titleObj = CreateUIObject("Title", rowObj.transform);
                 Text titleTxt = titleObj.AddComponent<Text>();
                 titleTxt.text = $"{nodeData.Name}";
                 titleTxt.font = font;
@@ -620,8 +623,7 @@ namespace Platformer2D.UI
                 titleRt.offsetMax = new Vector2(-330f, -8f);
 
                 // 3. Mô tả tác dụng
-                GameObject descObj = new GameObject("Desc");
-                descObj.transform.SetParent(rowObj.transform, false);
+                GameObject descObj = CreateUIObject("Desc", rowObj.transform);
                 Text descTxt = descObj.AddComponent<Text>();
                 descTxt.text = nodeData.Description;
                 descTxt.font = font;
@@ -635,8 +637,7 @@ namespace Platformer2D.UI
                 descRt.offsetMax = new Vector2(-330f, -2f);
 
                 // 4. Cấp độ Badge
-                GameObject badgeObj = new GameObject("LevelBadge");
-                badgeObj.transform.SetParent(rowObj.transform, false);
+                GameObject badgeObj = CreateUIObject("LevelBadge", rowObj.transform);
                 RectTransform badgeRt = GetOrAddRectTransform(badgeObj);
                 badgeRt.anchorMin = new Vector2(1f, 0.5f);
                 badgeRt.anchorMax = new Vector2(1f, 0.5f);
@@ -647,8 +648,7 @@ namespace Platformer2D.UI
                 Image badgeBg = badgeObj.AddComponent<Image>();
                 badgeBg.color = new Color(0.05f, 0.07f, 0.14f, 0.95f);
 
-                GameObject badgeTxtObj = new GameObject("Text");
-                badgeTxtObj.transform.SetParent(badgeObj.transform, false);
+                GameObject badgeTxtObj = CreateUIObject("Text", badgeObj.transform);
                 Text badgeTxt = badgeTxtObj.AddComponent<Text>();
                 badgeTxt.text = "CHƯA HỌC";
                 badgeTxt.font = font;
@@ -776,8 +776,7 @@ namespace Platformer2D.UI
 
         private Button CreateActionButton(Transform parent, string name, string label, Color bgColor, Font font, Vector2 size)
         {
-            GameObject obj = new GameObject(name);
-            obj.transform.SetParent(parent, false);
+            GameObject obj = CreateUIObject(name, parent);
 
             Image img = obj.AddComponent<Image>();
             img.color = bgColor;
@@ -788,8 +787,7 @@ namespace Platformer2D.UI
             RectTransform rt = GetOrAddRectTransform(obj);
             rt.sizeDelta = size;
 
-            GameObject lblObj = new GameObject("Label");
-            lblObj.transform.SetParent(obj.transform, false);
+            GameObject lblObj = CreateUIObject("Label", obj.transform);
             Text txt = lblObj.AddComponent<Text>();
             txt.text = label;
             txt.font = font;

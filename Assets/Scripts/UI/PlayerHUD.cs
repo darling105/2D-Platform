@@ -4,6 +4,7 @@ using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Platformer2D.Core.Architecture;
+using Platformer2D.Enemies.Bosses;
 using Platformer2D.Managers;
 using Platformer2D.Player.Components;
 using Platformer2D.Player.Controllers;
@@ -77,6 +78,9 @@ namespace Platformer2D.UI
         private int _lastKnownHealth = -1;
         private Coroutine _healthFlashCoroutine;
         private Coroutine _toastCoroutine;
+        private string _cachedCheckpointBtnText;
+        private Color _cachedCheckpointBtnColor = Color.white;
+        private bool _hasCachedBtnColor = false;
 
         private void Awake()
         {
@@ -270,7 +274,7 @@ namespace Platformer2D.UI
                 Transform stamBg = topLeft.Find("StaminaBar_Bg");
                 if (stamBg == null)
                 {
-                    GameObject staminaObj = new GameObject("StaminaBar_Bg");
+                    GameObject staminaObj = new GameObject("StaminaBar_Bg", typeof(RectTransform));
                     staminaObj.transform.SetParent(topLeft, false);
                     Image bg = staminaObj.AddComponent<Image>();
                     bg.color = new Color(0.12f, 0.16f, 0.22f, 0.95f);
@@ -281,7 +285,7 @@ namespace Platformer2D.UI
                     rt.sizeDelta = new Vector2(360f, 22f);
                     rt.anchoredPosition = new Vector2(135f, 38f);
 
-                    GameObject fillObj = new GameObject("StaminaBar_Fill");
+                    GameObject fillObj = new GameObject("StaminaBar_Fill", typeof(RectTransform));
                     fillObj.transform.SetParent(staminaObj.transform, false);
                     Image fill = fillObj.AddComponent<Image>();
                     fill.color = new Color(0.35f, 0.92f, 0.52f, 1f);
@@ -294,7 +298,7 @@ namespace Platformer2D.UI
                     fillRt.offsetMax = Vector2.zero;
                     _staminaBarFill = fill;
 
-                    GameObject txtObj = new GameObject("StaminaText");
+                    GameObject txtObj = new GameObject("StaminaText", typeof(RectTransform));
                     txtObj.transform.SetParent(staminaObj.transform, false);
                     Text txt = txtObj.AddComponent<Text>();
                     txt.text = "100/100";
@@ -322,7 +326,7 @@ namespace Platformer2D.UI
                 Transform expBg = topLeft.Find("ExpBar_Bg");
                 if (expBg == null)
                 {
-                    GameObject expObj = new GameObject("ExpBar_Bg");
+                    GameObject expObj = new GameObject("ExpBar_Bg", typeof(RectTransform));
                     expObj.transform.SetParent(topLeft, false);
                     Image bg = expObj.AddComponent<Image>();
                     bg.color = new Color(0.10f, 0.12f, 0.18f, 0.95f);
@@ -333,7 +337,7 @@ namespace Platformer2D.UI
                     rt.sizeDelta = new Vector2(360f, 18f);
                     rt.anchoredPosition = new Vector2(135f, 14f);
 
-                    GameObject fillObj = new GameObject("ExpBar_Fill");
+                    GameObject fillObj = new GameObject("ExpBar_Fill", typeof(RectTransform));
                     fillObj.transform.SetParent(expObj.transform, false);
                     Image fill = fillObj.AddComponent<Image>();
                     fill.color = new Color(0.42f, 0.82f, 1f, 1f);
@@ -346,7 +350,7 @@ namespace Platformer2D.UI
                     fillRt.offsetMax = Vector2.zero;
                     _expBarFill = fill;
 
-                    GameObject txtObj = new GameObject("ExpText");
+                    GameObject txtObj = new GameObject("ExpText", typeof(RectTransform));
                     txtObj.transform.SetParent(expObj.transform, false);
                     Text txt = txtObj.AddComponent<Text>();
                     txt.text = "EXP 0/100";
@@ -582,6 +586,31 @@ namespace Platformer2D.UI
                     if (_checkpointRespawnButton != null)
                     {
                         _checkpointRespawnButton.gameObject.SetActive(CheckpointManager.HasInstance);
+                        Text btnText = _checkpointRespawnButton.GetComponentInChildren<Text>();
+                        Image btnImg = _checkpointRespawnButton.GetComponent<Image>();
+                        if (btnText != null)
+                        {
+                            if (string.IsNullOrEmpty(_cachedCheckpointBtnText))
+                            {
+                                _cachedCheckpointBtnText = btnText.text;
+                            }
+                            if (btnImg != null && !_hasCachedBtnColor)
+                            {
+                                _cachedCheckpointBtnColor = btnImg.color;
+                                _hasCachedBtnColor = true;
+                            }
+
+                            if (BossArenaTrigger.IsBossEncounterActive)
+                            {
+                                btnText.text = "⚔️ ĐÁNH LẠI BOSS (RETRY)";
+                                if (btnImg != null) btnImg.color = new Color(1.0f, 0.42f, 0.15f, 1f);
+                            }
+                            else
+                            {
+                                btnText.text = !string.IsNullOrEmpty(_cachedCheckpointBtnText) ? _cachedCheckpointBtnText : "CHECKPOINT";
+                                if (btnImg != null && _hasCachedBtnColor) btnImg.color = _cachedCheckpointBtnColor;
+                            }
+                        }
                     }
                     if (_gameOverPanel != null) _gameOverPanel.SetActive(true);
                     break;
