@@ -21,10 +21,13 @@ namespace Platformer2D.Enemies.Bosses
         protected override void Awake()
         {
             _bossDisplayName = "VUA YÊU TINH (GOBLIN KING)";
-            _maxHealth = 65;
-            _baseMoveSpeed = 2.3f;
-            _meleeRange = 2.8f;
-            _meleeDamage = 2;
+            _maxHealth = 32;
+            _baseMoveSpeed = 1.9f;
+            _meleeRange = 2.6f;
+            _meleeDamage = 1;
+            _attackCooldown = 2.8f;
+            _specialCooldown = 7.5f;
+            _enrageSpeedMultiplier = 1.18f;
             _spriteFacesLeftByDefault = true;
 
             base.Awake();
@@ -54,7 +57,7 @@ namespace Platformer2D.Enemies.Bosses
                 _animator.Play("Goblin_king_Attack2");
             }
 
-            yield return new WaitForSeconds(0.45f);
+            yield return new WaitForSeconds(0.6f);
 
             // Ném tảng đá lớn
             float dirX = _isFacingRight ? 1f : -1f;
@@ -62,15 +65,15 @@ namespace Platformer2D.Enemies.Bosses
 
             GameObject rock = new GameObject("GoblinKing_GiantBoulder");
             rock.transform.position = spawnPos;
-            rock.transform.localScale = Vector3.one * 1.8f;
+            rock.transform.localScale = Vector3.one * 1.6f;
 
             CircleCollider2D col = rock.AddComponent<CircleCollider2D>();
-            col.radius = 0.45f;
+            col.radius = 0.42f;
             col.isTrigger = false;
 
             Rigidbody2D rockRb = rock.AddComponent<Rigidbody2D>();
             rockRb.bodyType = RigidbodyType2D.Dynamic;
-            rockRb.linearVelocity = new Vector2(dirX * 8.5f, 4.5f);
+            rockRb.linearVelocity = new Vector2(dirX * 6.5f, 4.0f);
             rockRb.mass = 4f;
 
             var dealer = rock.AddComponent<DamageDealer>();
@@ -100,14 +103,13 @@ namespace Platformer2D.Enemies.Bosses
             CameraFollow2D.TriggerShake(0.18f, 0.12f);
             EventBus.Publish(new HudToastMessageEvent("GOBLIN KING TRIỆU HỒI ĐỆ TỬ CAVE!", new Color(1f, 0.65f, 0.2f, 1f)));
 
-            yield return new WaitForSeconds(0.6f);
+            yield return new WaitForSeconds(0.65f);
 
-            // Sinh 2 đệ tử yêu tinh ở 2 bên
+            // Sinh 1 đệ tử yêu tinh trợ chiến
             SpawnMinion(transform.position + new Vector3(-3.2f, 0f, 0f));
-            SpawnMinion(transform.position + new Vector3(3.2f, 0f, 0f));
 
-            yield return new WaitForSeconds(0.5f);
-            _specialCooldownTimer = _specialCooldown * 1.2f;
+            yield return new WaitForSeconds(0.6f);
+            _specialCooldownTimer = _specialCooldown * 1.3f;
             _state = BossAIState.Chase;
         }
 

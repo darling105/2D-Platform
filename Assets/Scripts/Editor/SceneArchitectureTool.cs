@@ -104,32 +104,32 @@ namespace Platformer2D.EditorTools
         private const string PrefabEnemyHellDarkGoblinPath = "Assets/Prefabs/Enemies/Hell/Enemy_Hell_DarkGoblin.prefab";
 
         // Cave Tileset (Hang Động Thạch Nhũ)
-        private const string SpriteCaveTopLeft = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_01.png";
-        private const string SpriteCaveTopMid = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_02.png";
-        private const string SpriteCaveTopRight = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_03.png";
-        private const string SpriteCaveFillLeft = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_08.png";
-        private const string SpriteCaveFillMid = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_09.png";
-        private const string SpriteCaveFillRight = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_10.png";
-        private const string SpriteCaveBotLeft = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_15.png";
-        private const string SpriteCaveBotMid = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_16.png";
-        private const string SpriteCaveBotRight = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_17.png";
-        private const string SpriteCaveWallTop = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_04.png";
-        private const string SpriteCaveWallMid = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_11.png";
-        private const string SpriteCaveWallBot = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_18.png";
+        private const string SpriteCaveTopLeft = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_01.png";
+        private const string SpriteCaveTopMid = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_02.png";
+        private const string SpriteCaveTopRight = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_03.png";
+        private const string SpriteCaveFillLeft = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_10.png";
+        private const string SpriteCaveFillMid = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_11.png";
+        private const string SpriteCaveFillRight = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_12.png";
+        private const string SpriteCaveBotLeft = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_19.png";
+        private const string SpriteCaveBotMid = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_20.png";
+        private const string SpriteCaveBotRight = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_21.png";
+        private const string SpriteCaveWallTop = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_04.png";
+        private const string SpriteCaveWallMid = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_13.png";
+        private const string SpriteCaveWallBot = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_22.png";
 
         // Hell Tileset (Hỏa Ngục Hắc Thạch)
         private const string SpriteHellTopLeft = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_01.png";
         private const string SpriteHellTopMid = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_02.png";
         private const string SpriteHellTopRight = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_03.png";
-        private const string SpriteHellFillLeft = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_08.png";
-        private const string SpriteHellFillMid = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_09.png";
-        private const string SpriteHellFillRight = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_10.png";
-        private const string SpriteHellBotLeft = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_15.png";
-        private const string SpriteHellBotMid = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_16.png";
-        private const string SpriteHellBotRight = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_17.png";
+        private const string SpriteHellFillLeft = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_10.png";
+        private const string SpriteHellFillMid = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_11.png";
+        private const string SpriteHellFillRight = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_12.png";
+        private const string SpriteHellBotLeft = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_19.png";
+        private const string SpriteHellBotMid = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_20.png";
+        private const string SpriteHellBotRight = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_21.png";
         private const string SpriteHellWallTop = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_04.png";
-        private const string SpriteHellWallMid = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_11.png";
-        private const string SpriteHellWallBot = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_18.png";
+        private const string SpriteHellWallMid = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_13.png";
+        private const string SpriteHellWallBot = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_22.png";
 
         // Field Tileset (Mặt đất cỏ, Sàn 1 chiều, Trần đất)
         private const string SpriteFieldTopLeft = "Assets/GameAssets/Field-Tileset/Tiles/Tileset/TileSet_01.png";
@@ -1017,17 +1017,17 @@ namespace Platformer2D.EditorTools
             // 17. PREFABS MÔI TRƯỜNG ĐẶC TRƯNG HANG ĐỘNG (CAVE)
             prefabs.OneWayPlatformCave = CreateOneWayPlatformPrefab(
                 "Platform_OneWay_Cave",
-                "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_36.png",
-                "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_37.png",
-                "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_38.png",
+                "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_28.png",
+                "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_29.png",
+                "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_30.png",
                 donors,
                 PrefabOneWayCavePath);
 
             prefabs.FallingPlatformCave = CreateFallingPlatformPrefab(
                 "FallingPlatform_Cave",
-                "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_39.png",
-                "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_40.png",
-                "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_41.png",
+                "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_28.png",
+                "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_29.png",
+                "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_30.png",
                 donors,
                 PrefabFallingCavePath);
 
@@ -1039,24 +1039,24 @@ namespace Platformer2D.EditorTools
             // 18. PREFABS MÔI TRƯỜNG ĐẶC TRƯNG HỎA NGỤC (HELL)
             prefabs.OneWayPlatformHell = CreateOneWayPlatformPrefab(
                 "Platform_OneWay_Hell",
-                "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_36.png",
-                "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_37.png",
-                "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_38.png",
+                "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_28.png",
+                "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_29.png",
+                "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_30.png",
                 donors,
                 PrefabOneWayHellPath);
 
             prefabs.FallingPlatformHell = CreateFallingPlatformPrefab(
                 "FallingPlatform_Hell",
-                "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_39.png",
-                "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_40.png",
-                "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_41.png",
+                "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_28.png",
+                "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_29.png",
+                "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_30.png",
                 donors,
                 PrefabFallingHellPath);
 
             prefabs.SpikeHell = CreateSpikePrefab("SpikeHazard_Hell", "Assets/GameAssets/Hell-Tileset/Objects/Spikes/1.png", donors, PrefabSpikeHellPath);
             prefabs.CrateHell = CreateCratePrefab("Crate_Hell", "Assets/GameAssets/Hell-Tileset/Objects/Boxes/1.png", prefabs.RockPickup, donors, PrefabCrateHellPath);
             prefabs.LadderHell = CreateLadderPrefab("Ladder_Hell", "Assets/GameAssets/Hell-Tileset/Objects/Ladders/1.png", donors, PrefabLadderHellPath);
-            prefabs.JumpPadHell = CreateJumpPadPrefab("JumpPad_Hell", "Assets/GameAssets/Hell-Tileset/Objects/Spikes/2.png", donors, PrefabJumpPadHellPath);
+            prefabs.JumpPadHell = CreateJumpPadPrefab("JumpPad_Hell", "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_31.png", donors, PrefabJumpPadHellPath, new Color(1.0f, 0.75f, 0.55f, 1f), true);
 
             // 19. BỘ 6 QUÁI VẬT HANG ĐỘNG (CAVE)
             prefabs.EnemyCaveBat = CreateEnemyPrefab(new EnemyConfig
@@ -1482,16 +1482,25 @@ namespace Platformer2D.EditorTools
             return SaveTempAsPrefab(ladder, savePath);
         }
 
-        private static GameObject CreateJumpPadPrefab(string name, string spritePath, DonorAssets donors, string savePath)
+        private static GameObject CreateJumpPadPrefab(string name, string spritePath, DonorAssets donors, string savePath, Color? tint = null, bool isTileSprite = false)
         {
             GameObject jumpPad = new GameObject(name);
-            GameObject visual = CreateSpriteObject("Visual", spritePath, donors, Color.white, 0);
+            GameObject visual = CreateSpriteObject("Visual", spritePath, donors, tint ?? Color.white, 0);
             visual.transform.SetParent(jumpPad.transform, false);
-            visual.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
-            visual.transform.localPosition = new Vector3(0f, 0.75f, 0f);
+            if (isTileSprite)
+            {
+                visual.transform.localScale = new Vector3(1.15f, 0.85f, 1f);
+                visual.transform.localPosition = new Vector3(0f, 0.42f, 0f);
+                Platformer2D.VFX.AmbientGlowPulse.Attach(visual.transform, new Color(1f, 0.32f, 0.12f, 0.45f), 1.4f, -1, Vector3.zero);
+            }
+            else
+            {
+                visual.transform.localScale = new Vector3(0.5f, 0.5f, 1f);
+                visual.transform.localPosition = new Vector3(0f, 0.75f, 0f);
+            }
             BoxCollider2D col = jumpPad.AddComponent<BoxCollider2D>();
-            col.size = new Vector2(1.25f, 1.2f);
-            col.offset = new Vector2(0f, 0.65f);
+            col.size = new Vector2(1.25f, isTileSprite ? 0.85f : 1.2f);
+            col.offset = new Vector2(0f, isTileSprite ? 0.42f : 0.65f);
             JumpPad comp = jumpPad.AddComponent<JumpPad>();
             SetFloatProperty(comp, "_bounceForce", 16.5f);
             return SaveTempAsPrefab(jumpPad, savePath);
@@ -1790,6 +1799,10 @@ namespace Platformer2D.EditorTools
             InstantiateEnemyOnSurface(p.EnemyMage, z4, 112.0f, 1.5f);
             InstantiatePrefab(p.OneWayPlatform, z4, new Vector3(112.0f, 3.2f, 0f));
             InstantiatePrefab(p.FoodMeat, z4, new Vector3(112.0f, 3.8f, 0f));
+            // Cầu nối bục sụt lún + bục di chuyển bắc qua hố 118.5 .. 131.0 sang Zone 5
+            InstantiatePrefab(p.FallingPlatform, z4, new Vector3(121.5f, 1.4f, 0f));
+            InstantiatePrefab(p.FallingPlatform, z4, new Vector3(125.0f, 1.0f, 0f));
+            CreateMovingPlatformSystem(z4, new Vector3(127.5f, 0.5f, 0f), new Vector3(129.8f, 0.5f, 0f), donors);
 
             // KHU 5: Tàn Tích Đá Cổ (131.5 .. 164.5, topY = 0.0)
             Transform z5 = CreateSection("=== ZONE 5 - TAN TICH DA CO ===");
@@ -1904,24 +1917,28 @@ namespace Platformer2D.EditorTools
             InstantiatePrefab(GetLadder(p, BiomeType.Cave), z3, new Vector3(83.0f, 0.50f, 0f));
             InstantiatePrefab(GetOneWayPlatform(p, BiomeType.Cave), z3, new Vector3(83.0f, 2.20f, 0f));
             InstantiatePrefab(p.FoodMeat, z3, new Vector3(83.0f, 2.75f, 0f));
-            InstantiatePrefab(GetJumpPad(p, BiomeType.Cave), z3, new Vector3(89.0f, -1.5f, 0f));
+            InstantiatePrefab(GetJumpPad(p, BiomeType.Cave), z3, new Vector3(87.5f, -1.5f, 0f));
+            InstantiatePrefab(GetOneWayPlatform(p, BiomeType.Cave), z3, new Vector3(91.2f, 0.4f, 0f));
 
-            // KHU 4: Mỏ Đá Bỏ Hoang & Sàn Sụp Lún (95 .. 128, topY = +1.5)
+            // KHU 4: Mỏ Đá Bỏ Hoang & Sàn Sụp Lún (93.5 .. 119.5, topY = +1.5)
             Transform z4 = CreateSection("=== ZONE 4 - MO DA BO HOANG & SAN SUP LUN ===");
-            CreateBiomeGround("Ground_Zone4", z4, 111.5f, 1.5f, 24, 3, BiomeType.Cave, donors);
-            InstantiatePrefab(p.Checkpoint, z4, new Vector3(98.0f, 1.969f, 0f));
-            InstantiatePrefab(GetFallingPlatform(p, BiomeType.Cave), z4, new Vector3(103.0f, 3.40f, 0f));
-            InstantiatePrefab(p.Coin, z4, new Vector3(103.0f, 4.15f, 0f));
-            InstantiatePrefab(GetFallingPlatform(p, BiomeType.Cave), z4, new Vector3(107.0f, 3.40f, 0f));
-            InstantiatePrefab(p.FoodCookies, z4, new Vector3(107.0f, 4.15f, 0f));
-            InstantiateEnemyOnSurface(p.EnemyCaveBat, z4, 112.0f, 1.5f);
-            InstantiateEnemyOnSurface(p.EnemyCaveGoblinRange, z4, 118.0f, 1.5f);
-            InstantiatePrefab(p.HealthPickup, z4, new Vector3(124.0f, 1.88f, 0f));
-            InstantiatePrefab(p.RockPickup, z4, new Vector3(125.5f, 1.82f, 0f));
+            CreateBiomeGround("Ground_Zone4", z4, 106.5f, 1.5f, 26, 3, BiomeType.Cave, donors);
+            InstantiatePrefab(p.Checkpoint, z4, new Vector3(95.5f, 1.969f, 0f));
+            InstantiateEnemyOnSurface(p.EnemyCaveBat, z4, 102.0f, 1.5f);
+            InstantiatePrefab(GetOneWayPlatform(p, BiomeType.Cave), z4, new Vector3(106.0f, 3.2f, 0f));
+            InstantiatePrefab(p.Coin, z4, new Vector3(106.0f, 3.8f, 0f));
+            InstantiateEnemyOnSurface(p.EnemyCaveGoblinRange, z4, 112.0f, 1.5f);
+            InstantiatePrefab(p.HealthPickup, z4, new Vector3(116.5f, 1.88f, 0f));
+            InstantiatePrefab(p.RockPickup, z4, new Vector3(117.8f, 1.82f, 0f));
+            // Cầu bục sụt lún + bục di chuyển bắc qua vực sâu (119.5 .. 134.5) sang Zone 5
+            InstantiatePrefab(GetFallingPlatform(p, BiomeType.Cave), z4, new Vector3(122.5f, 1.3f, 0f));
+            InstantiatePrefab(p.Coin, z4, new Vector3(122.5f, 2.0f, 0f));
+            InstantiatePrefab(GetFallingPlatform(p, BiomeType.Cave), z4, new Vector3(126.0f, 0.9f, 0f));
+            InstantiatePrefab(p.FoodCookies, z4, new Vector3(126.0f, 1.6f, 0f));
+            CreateMovingPlatformSystem(z4, new Vector3(129.0f, 0.5f, 0f), new Vector3(132.5f, 0.5f, 0f), donors, 3, BiomeType.Cave);
 
-            // KHU 5: Hẻm Núi Bóng Tối & Pháp Sư (131 .. 164, topY = 0.0)
+            // KHU 5: Hẻm Núi Bóng Tối & Pháp Sư (134.5 .. 160.5, topY = 0.0)
             Transform z5 = CreateSection("=== ZONE 5 - HEM NUI BONG TOI & PHAP SU ===");
-            CreateMovingPlatformSystem(z5, new Vector3(129.0f, 0.5f, 0f), new Vector3(133.0f, 0.5f, 0f), donors, 3, BiomeType.Cave);
             CreateBiomeGround("Ground_Zone5", z5, 147.5f, 0.0f, 26, 3, BiomeType.Cave, donors);
             InstantiatePrefab(p.Checkpoint, z5, new Vector3(135.0f, 0.469f, 0f));
             InstantiateEnemyOnSurface(p.EnemyCaveGoblinMelee, z5, 139.0f, 0.0f);
@@ -1933,7 +1950,10 @@ namespace Platformer2D.EditorTools
 
             // KHU 6: Doanh Trại Goblin & Checkpoint Tiền Đồn (167 .. 199, topY = -1.5)
             Transform z6 = CreateSection("=== ZONE 6 - DOANH TRAI GOBLIN ===");
+            CreateMovingPlatformSystem(z6, new Vector3(162.0f, -0.75f, 0f), new Vector3(165.5f, -0.75f, 0f), donors, 3, BiomeType.Cave);
             CreateBiomeGround("Ground_Zone6", z6, 183.0f, -1.5f, 32, 3, BiomeType.Cave, donors);
+            CreateGroundProp("Cave_Rock_1", z6, "Assets/GameAssets/Cave-Tileset/Objects/Rocks/1.png", 195.0f, -1.5f, donors, -1);
+            CreateGroundProp("Cave_Pointer_1", z6, "Assets/GameAssets/Cave-Tileset/Objects/Pointers/1.png", 168.0f, -1.5f, donors, -1);
             InstantiatePrefab(p.Checkpoint, z6, new Vector3(169.5f, -1.031f, 0f));
             InstantiateEnemyOnSurface(p.EnemyCaveBigMushroom, z6, 176.0f, -1.5f);
             InstantiatePrefab(GetOneWayPlatform(p, BiomeType.Cave), z6, new Vector3(181.0f, 0.8f, 0f));
@@ -2019,24 +2039,27 @@ namespace Platformer2D.EditorTools
             InstantiateEnemyOnSurface(p.EnemyHellBeholder, z3, 81.0f, -1.5f);
             InstantiatePrefab(GetOneWayPlatform(p, BiomeType.Hell), z3, new Vector3(86.0f, 2.0f, 0f));
             InstantiatePrefab(p.FoodMeat, z3, new Vector3(86.0f, 2.6f, 0f));
-            InstantiatePrefab(GetJumpPad(p, BiomeType.Hell), z3, new Vector3(90.0f, -1.5f, 0f));
+            InstantiatePrefab(GetJumpPad(p, BiomeType.Hell), z3, new Vector3(87.5f, -1.5f, 0f));
+            InstantiatePrefab(GetOneWayPlatform(p, BiomeType.Hell), z3, new Vector3(91.2f, 0.4f, 0f));
 
-            // KHU 4: Cầu Treo Dung Nham & Sàn Sụp Lún (95 .. 128, topY = +1.5)
+            // KHU 4: Cầu Treo Dung Nham & Sàn Sụp Lún (93.5 .. 119.5, topY = +1.5)
             Transform z4 = CreateSection("=== ZONE 4 - CAU TREO DUNG NHAM & SAN SUP LUN ===");
-            CreateBiomeGround("Ground_Zone4", z4, 111.5f, 1.5f, 24, 3, BiomeType.Hell, donors);
-            InstantiatePrefab(p.Checkpoint, z4, new Vector3(98.0f, 1.969f, 0f));
-            InstantiatePrefab(GetFallingPlatform(p, BiomeType.Hell), z4, new Vector3(103.0f, 3.40f, 0f));
-            InstantiatePrefab(GetFallingPlatform(p, BiomeType.Hell), z4, new Vector3(107.0f, 3.40f, 0f));
-            InstantiatePrefab(GetFallingPlatform(p, BiomeType.Hell), z4, new Vector3(110.0f, 3.40f, 0f));
-            InstantiateEnemyOnSurface(p.EnemyHellZombie, z4, 114.0f, 1.5f);
-            InstantiatePrefab(GetOneWayPlatform(p, BiomeType.Hell), z4, new Vector3(119.0f, 3.2f, 0f));
-            InstantiateEnemyOnSurface(p.EnemyHellBeholder, z4, 119.0f, 3.2f);
-            InstantiatePrefab(p.HealthPickup, z4, new Vector3(124.0f, 1.88f, 0f));
-            InstantiatePrefab(p.FoodMeat, z4, new Vector3(126.0f, 1.88f, 0f));
+            CreateBiomeGround("Ground_Zone4", z4, 106.5f, 1.5f, 26, 3, BiomeType.Hell, donors);
+            InstantiatePrefab(p.Checkpoint, z4, new Vector3(95.5f, 1.969f, 0f));
+            InstantiateEnemyOnSurface(p.EnemyHellZombie, z4, 103.0f, 1.5f);
+            InstantiatePrefab(GetOneWayPlatform(p, BiomeType.Hell), z4, new Vector3(109.0f, 3.2f, 0f));
+            InstantiateEnemyOnSurface(p.EnemyHellBeholder, z4, 109.0f, 3.2f);
+            InstantiatePrefab(p.HealthPickup, z4, new Vector3(116.5f, 1.88f, 0f));
+            InstantiatePrefab(p.FoodMeat, z4, new Vector3(117.8f, 1.88f, 0f));
+            // Cầu bục sụt lún + bục di chuyển bắc qua biển dung nham (119.5 .. 134.5) sang Zone 5
+            InstantiatePrefab(GetFallingPlatform(p, BiomeType.Hell), z4, new Vector3(122.5f, 1.3f, 0f));
+            InstantiatePrefab(p.Coin, z4, new Vector3(122.5f, 2.0f, 0f));
+            InstantiatePrefab(GetFallingPlatform(p, BiomeType.Hell), z4, new Vector3(126.0f, 0.9f, 0f));
+            InstantiatePrefab(p.FoodCookies, z4, new Vector3(126.0f, 1.6f, 0f));
+            CreateMovingPlatformSystem(z4, new Vector3(129.0f, 0.5f, 0f), new Vector3(132.5f, 0.5f, 0f), donors, 3, BiomeType.Hell);
 
-            // KHU 5: Lò Luyện Linh Hồn (131 .. 164, topY = 0.0)
+            // KHU 5: Lò Luyện Linh Hồn (134.5 .. 160.5, topY = 0.0)
             Transform z5 = CreateSection("=== ZONE 5 - LO LUYEN LINH HON ===");
-            CreateMovingPlatformSystem(z5, new Vector3(129.0f, 0.5f, 0f), new Vector3(133.0f, 0.5f, 0f), donors, 3, BiomeType.Hell);
             CreateBiomeGround("Ground_Zone5", z5, 147.5f, 0.0f, 26, 3, BiomeType.Hell, donors);
             InstantiatePrefab(p.Checkpoint, z5, new Vector3(135.0f, 0.469f, 0f));
             InstantiateEnemyOnSurface(p.EnemyHellSkeleton, z5, 138.0f, 0.0f);
@@ -2048,7 +2071,12 @@ namespace Platformer2D.EditorTools
 
             // KHU 6: Tiền Đồn Hắc Ám & Checkpoint Tiền Đồn (167 .. 199, topY = -1.5)
             Transform z6 = CreateSection("=== ZONE 6 - TIEN DON HAC AM ===");
+            CreateMovingPlatformSystem(z6, new Vector3(162.0f, -0.75f, 0f), new Vector3(165.5f, -0.75f, 0f), donors, 3, BiomeType.Hell);
             CreateBiomeGround("Ground_Zone6", z6, 183.0f, -1.5f, 32, 3, BiomeType.Hell, donors);
+            CreateGroundProp("Hell_Rock_1", z6, "Assets/GameAssets/Hell-Tileset/Objects/Rocks/1.png", 195.0f, -1.5f, donors, -1);
+            CreateGroundProp("Hell_Grass_1", z6, "Assets/GameAssets/Hell-Tileset/Objects/Grass/1.png", 172.0f, -1.5f, donors, -1);
+            CreateGroundProp("Hell_Pointer_1", z6, "Assets/GameAssets/Hell-Tileset/Objects/Pointers/1.png", 168.0f, -1.5f, donors, -1);
+            CreateGroundProp("Hell_Grass_2", z6, "Assets/GameAssets/Hell-Tileset/Objects/Grass/2.png", 195.0f, -1.5f, donors, -1);
             InstantiatePrefab(p.Checkpoint, z6, new Vector3(169.5f, -1.031f, 0f));
             InstantiateEnemyOnSurface(p.EnemyHellDarkGoblin, z6, 176.0f, -1.5f);
             InstantiatePrefab(GetOneWayPlatform(p, BiomeType.Hell), z6, new Vector3(181.0f, 0.8f, 0f));
@@ -2400,18 +2428,18 @@ namespace Platformer2D.EditorTools
                 topLPath = SpriteCaveTopLeft; topMPath = SpriteCaveTopMid; topRPath = SpriteCaveTopRight;
                 fillLPath = SpriteCaveFillLeft; fillMPath = SpriteCaveFillMid; fillRPath = SpriteCaveFillRight;
                 botLPath = SpriteCaveBotLeft; botMPath = SpriteCaveBotMid; botRPath = SpriteCaveBotRight;
-                ceilLPath = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_22.png";
-                ceilMPath = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_23.png";
-                ceilRPath = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/TileSet_24.png";
+                ceilLPath = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_28.png";
+                ceilMPath = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_29.png";
+                ceilRPath = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_30.png";
             }
             else if (biome == BiomeType.Hell)
             {
                 topLPath = SpriteHellTopLeft; topMPath = SpriteHellTopMid; topRPath = SpriteHellTopRight;
                 fillLPath = SpriteHellFillLeft; fillMPath = SpriteHellFillMid; fillRPath = SpriteHellFillRight;
                 botLPath = SpriteHellBotLeft; botMPath = SpriteHellBotMid; botRPath = SpriteHellBotRight;
-                ceilLPath = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_22.png";
-                ceilMPath = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_23.png";
-                ceilRPath = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_24.png";
+                ceilLPath = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_28.png";
+                ceilMPath = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_29.png";
+                ceilRPath = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_30.png";
             }
 
             float width = tileCols;
@@ -3104,15 +3132,15 @@ namespace Platformer2D.EditorTools
 
             if (biome == BiomeType.Cave)
             {
-                moveLeft = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_22.png";
-                moveMid = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_23.png";
-                moveRight = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_24.png";
+                moveLeft = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_28.png";
+                moveMid = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_29.png";
+                moveRight = "Assets/GameAssets/Cave-Tileset/Tiles/Tileset/Tileset_30.png";
             }
             else if (biome == BiomeType.Hell)
             {
-                moveLeft = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_22.png";
-                moveMid = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_23.png";
-                moveRight = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_24.png";
+                moveLeft = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_28.png";
+                moveMid = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_29.png";
+                moveRight = "Assets/GameAssets/Hell-Tileset/Tiles/Tileset/TileSet_30.png";
             }
 
             GameObject visuals = new GameObject("Visuals");

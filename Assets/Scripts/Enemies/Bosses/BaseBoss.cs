@@ -45,16 +45,16 @@ namespace Platformer2D.Enemies.Bosses
 
         [Header("Boss Identity")]
         [SerializeField] protected string _bossDisplayName = "CHÚA QUỶ ĐỒNG CỎ";
-        [SerializeField] protected int _maxHealth = 45;
-        [SerializeField] protected float _baseMoveSpeed = 2.4f;
+        [SerializeField] protected int _maxHealth = 25;
+        [SerializeField] protected float _baseMoveSpeed = 2.0f;
         [SerializeField] protected float _chaseRange = 16f;
         [SerializeField] protected float _meleeRange = 2.4f;
 
         [Header("Combat Settings")]
-        [SerializeField] protected int _meleeDamage = 2;
-        [SerializeField] protected float _attackCooldown = 2.0f;
-        [SerializeField] protected float _specialCooldown = 5.5f;
-        [SerializeField] protected float _enrageSpeedMultiplier = 1.35f;
+        [SerializeField] protected int _meleeDamage = 1;
+        [SerializeField] protected float _attackCooldown = 2.8f;
+        [SerializeField] protected float _specialCooldown = 7.5f;
+        [SerializeField] protected float _enrageSpeedMultiplier = 1.18f;
 
         [Header("Visuals & Facing")]
         [SerializeField] protected bool _spriteFacesLeftByDefault = true;
@@ -299,7 +299,7 @@ namespace Platformer2D.Enemies.Bosses
                 _animator.SetTrigger(useCombo2 ? Attack2Hash : AttackHash);
             }
 
-            float animDuration = _isEnraged ? 0.65f : 0.85f;
+            float animDuration = _isEnraged ? 0.85f : 1.05f;
             StartCoroutine(MeleeAttackRoutine(animDuration));
         }
 
@@ -308,11 +308,11 @@ namespace Platformer2D.Enemies.Bosses
             yield return new WaitForSeconds(duration * 0.45f);
 
             // Gây sát thương tại vùng trước mặt
-            DealHitboxDamage(_meleeRange * 0.9f, _meleeDamage);
+            DealHitboxDamage(_meleeRange * 0.85f, _meleeDamage);
 
             yield return new WaitForSeconds(duration * 0.55f);
 
-            _attackCooldownTimer = _isEnraged ? (_attackCooldown * 0.65f) : _attackCooldown;
+            _attackCooldownTimer = _isEnraged ? (_attackCooldown * 0.8f) : _attackCooldown;
             _state = BossAIState.Chase;
         }
 
@@ -334,20 +334,20 @@ namespace Platformer2D.Enemies.Bosses
             // Lao húc hoặc dậm đất
             CameraFollow2D.TriggerShake(0.08f, 0.06f);
             float chargeDir = _isFacingRight ? 1f : -1f;
-            float chargeSpeed = _baseMoveSpeed * 2.5f;
+            float chargeSpeed = _baseMoveSpeed * 2.0f;
 
-            float chargeTime = 0.45f;
+            float chargeTime = 0.42f;
             while (chargeTime > 0f)
             {
                 chargeTime -= Time.deltaTime;
                 _rb.linearVelocityX = chargeDir * chargeSpeed;
-                DealHitboxDamage(_meleeRange * 1.1f, _meleeDamage + 1);
+                DealHitboxDamage(_meleeRange * 1.0f, _meleeDamage);
                 yield return null;
             }
 
             _rb.linearVelocityX = 0f;
-            _specialCooldownTimer = _isEnraged ? (_specialCooldown * 0.7f) : _specialCooldown;
-            _attackCooldownTimer = 1.0f;
+            _specialCooldownTimer = _isEnraged ? (_specialCooldown * 0.8f) : _specialCooldown;
+            _attackCooldownTimer = 1.4f;
             _state = BossAIState.Chase;
         }
 

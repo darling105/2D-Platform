@@ -205,17 +205,17 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Platformer2D.Enemies.Bosses.NecromancerBoss
   _bossDisplayName: "CH\xDAA QU\u1EF6 \u0110\u1ED2NG C\u1ECE"
-  _maxHealth: 45
-  _baseMoveSpeed: 2.4
+  _maxHealth: 25
+  _baseMoveSpeed: 2
   _chaseRange: 16
   _meleeRange: 2.4
-  _meleeDamage: 2
-  _attackCooldown: 2
-  _specialCooldown: 5.5
-  _enrageSpeedMultiplier: 1.35
+  _meleeDamage: 1
+  _attackCooldown: 2.8
+  _specialCooldown: 7.5
+  _enrageSpeedMultiplier: 1.18
   _spriteFacesLeftByDefault: 1
   _enrageTint: {r: 1, g: 0.45, b: 0.45, a: 1}
-  _teleportCooldown: 4.5
+  _teleportCooldown: 7
 --- !u!114 &6914300230715139642
 MonoBehaviour:
   m_ObjectHideFlags: 0

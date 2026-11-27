@@ -16,15 +16,19 @@ namespace Platformer2D.Enemies.Bosses
     public class DemonBoss : BaseBoss
     {
         [Header("Demon Boss Specific")]
-        [SerializeField] private float _darkOrbSpeed = 7.5f;
+        [SerializeField] private float _darkOrbSpeed = 5.5f;
 
         protected override void Awake()
         {
             _bossDisplayName = "CHÚA QUỶ ĐỒNG CỎ (DEMON)";
-            _maxHealth = 48;
-            _baseMoveSpeed = 2.6f;
-            _meleeRange = 2.5f;
-            _meleeDamage = 2;
+            _maxHealth = 24;
+            _baseMoveSpeed = 2.0f;
+            _meleeRange = 2.4f;
+            _meleeDamage = 1;
+            _attackCooldown = 2.8f;
+            _specialCooldown = 7.5f;
+            _enrageSpeedMultiplier = 1.18f;
+            _darkOrbSpeed = 5.5f;
             _spriteFacesLeftByDefault = true;
 
             base.Awake();
@@ -53,7 +57,7 @@ namespace Platformer2D.Enemies.Bosses
                 _animator.Play("Demon_Sneer");
             }
 
-            yield return new WaitForSeconds(0.45f);
+            yield return new WaitForSeconds(0.55f);
 
             // Nhảy lên nhẹ và dậm sầm xuống đất
             _rb.linearVelocityY = 6.5f;
@@ -69,7 +73,7 @@ namespace Platformer2D.Enemies.Bosses
             EventBus.Publish(new PlaySoundEvent("EnemyHurt", SoundType.SFX, transform.position));
 
             // Sát thương chấn động xung quanh
-            DealHitboxDamage(4.2f, _meleeDamage + 1);
+            DealHitboxDamage(3.6f, _meleeDamage);
 
             // Bắn cầu hắc ám về phía người chơi
             if (_playerTransform != null)
@@ -77,8 +81,8 @@ namespace Platformer2D.Enemies.Bosses
                 SpawnDarkOrb();
             }
 
-            yield return new WaitForSeconds(0.4f);
-            _specialCooldownTimer = _specialCooldown * 0.75f;
+            yield return new WaitForSeconds(0.55f);
+            _specialCooldownTimer = _specialCooldown;
             _state = BossAIState.Chase;
         }
 

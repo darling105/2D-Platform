@@ -301,8 +301,8 @@ namespace Platformer2D.EditorTools
                 "MainPanel",
                 "Window_2",
                 "MENU",
-                new Vector2(624f, 588f),
-                new Vector2(39f, -102f),
+                new Vector2(624f, 624f),
+                new Vector2(39f, -112f),
                 0.436f,
                 0.932f,
                 font,
@@ -311,17 +311,18 @@ namespace Platformer2D.EditorTools
                 out RectTransform menuContent);
 
             VerticalLayoutGroup menuLayout = menuContent.gameObject.AddComponent<VerticalLayoutGroup>();
-            menuLayout.spacing = 18f;
+            menuLayout.spacing = 14f;
             menuLayout.childAlignment = TextAnchor.MiddleCenter;
             menuLayout.childControlWidth = false;
             menuLayout.childControlHeight = false;
             menuLayout.childForceExpandWidth = false;
             menuLayout.childForceExpandHeight = false;
 
-            Button playBtn = CreateActionButton(menuContent, "PlayButton", "PLAY", LoadFirstSprite(IconPlayPath), ColGreen, font, new Vector2(366f, 78f));
-            Button testBtn = CreateActionButton(menuContent, "TestLabButton", "TEST LAB", LoadFirstSprite(IconGamepadPath), ColCyan, font, new Vector2(366f, 78f));
-            Button settingsBtn = CreateActionButton(menuContent, "SettingsButton", "SETTINGS", LoadFirstSprite(IconSettingsPath), ColTextWhite, font, new Vector2(366f, 78f));
-            Button quitBtn = CreateActionButton(menuContent, "QuitButton", "QUIT", LoadFirstSprite(IconExitPath), ColRed, font, new Vector2(366f, 78f));
+            Button playBtn = CreateActionButton(menuContent, "PlayButton", "PLAY", LoadFirstSprite(IconPlayPath), ColGreen, font, new Vector2(366f, 68f));
+            Button levelSelectBtn = CreateActionButton(menuContent, "SelectLevelButton", "SELECT LEVEL", LoadFirstSprite(IconStarPath), ColGold, font, new Vector2(366f, 68f));
+            Button testBtn = CreateActionButton(menuContent, "TestLabButton", "TEST LAB", LoadFirstSprite(IconGamepadPath), ColCyan, font, new Vector2(366f, 68f));
+            Button settingsBtn = CreateActionButton(menuContent, "SettingsButton", "SETTINGS", LoadFirstSprite(IconSettingsPath), ColTextWhite, font, new Vector2(366f, 68f));
+            Button quitBtn = CreateActionButton(menuContent, "QuitButton", "QUIT", LoadFirstSprite(IconExitPath), ColRed, font, new Vector2(366f, 68f));
 
             // 3. Thanh gợi ý phím điều khiển dưới cùng
             RectTransform hintBar = CreateBorderedBox(canvasRoot.transform, "ControlsHintBar", new Vector2(1380f, 52f), new Color(0.06f, 0.075f, 0.125f, 0.82f), new Color(0.28f, 0.33f, 0.45f, 0.9f));
@@ -336,14 +337,32 @@ namespace Platformer2D.EditorTools
             SettingsPanelUI settingsPanel = CreateSettingsPanel(canvasRoot.transform, font);
             settingsPanel.gameObject.SetActive(false);
 
+            // 5. Bảng Select Level (mặc định ẩn)
+            RectTransform levelSelectPanelRt = CreateLevelSelectPanel(
+                canvasRoot.transform,
+                font,
+                out Button lvl1Btn,
+                out Button lvl2Btn,
+                out Button lvl3Btn,
+                out Button lvlBackBtn,
+                out Button lvlCloseBtn);
+            levelSelectPanelRt.gameObject.SetActive(false);
+
             // Wire MainMenuUI
             SerializedObject so = new SerializedObject(menuUI);
             SetObject(so, "_mainPanel", menuWindowRt.gameObject);
             SetObject(so, "_settingsPanel", settingsPanel);
+            SetObject(so, "_levelSelectPanel", levelSelectPanelRt.gameObject);
             SetObject(so, "_playButton", playBtn);
+            SetObject(so, "_levelSelectButton", levelSelectBtn);
             SetObject(so, "_testLabButton", testBtn);
             SetObject(so, "_settingsButton", settingsBtn);
             SetObject(so, "_quitButton", quitBtn);
+            SetObject(so, "_level1Button", lvl1Btn);
+            SetObject(so, "_level2Button", lvl2Btn);
+            SetObject(so, "_level3Button", lvl3Btn);
+            SetObject(so, "_levelSelectBackButton", lvlBackBtn);
+            SetObject(so, "_levelSelectCloseButton", lvlCloseBtn);
             so.ApplyModifiedPropertiesWithoutUndo();
 
             return SaveTempPrefab(canvasRoot, PrefabMainMenuUIPath);
@@ -987,6 +1006,51 @@ namespace Platformer2D.EditorTools
             so.ApplyModifiedPropertiesWithoutUndo();
 
             return settingsUI;
+        }
+
+        private static RectTransform CreateLevelSelectPanel(
+            Transform parent,
+            Font font,
+            out Button level1Btn,
+            out Button level2Btn,
+            out Button level3Btn,
+            out Button backBtn,
+            out Button closeBtn)
+        {
+            RectTransform panelRt = CreateWindowFrame(
+                parent,
+                "LevelSelectPanel",
+                "Window_5",
+                "SELECT LEVEL",
+                new Vector2(780f, 620f),
+                new Vector2(39f, -60f),
+                0.449f,
+                0.946f,
+                font,
+                true,
+                out closeBtn,
+                out RectTransform content);
+
+            VerticalLayoutGroup layout = content.gameObject.AddComponent<VerticalLayoutGroup>();
+            layout.spacing = 18f;
+            layout.childAlignment = TextAnchor.MiddleCenter;
+            layout.childControlWidth = false;
+            layout.childControlHeight = false;
+            layout.childForceExpandWidth = false;
+            layout.childForceExpandHeight = false;
+
+            level1Btn = CreateActionButton(content, "Level1Button", "1. FIELD  (BOSS: DEMON)", LoadFirstSprite(IconPlayPath), ColGreen, font, new Vector2(540f, 76f));
+            level2Btn = CreateActionButton(content, "Level2Button", "2. CAVE   (BOSS: GOBLIN KING)", LoadFirstSprite(IconPlayPath), ColCyan, font, new Vector2(540f, 76f));
+            level3Btn = CreateActionButton(content, "Level3Button", "3. HELL   (BOSS: NECROMANCER)", LoadFirstSprite(IconPlayPath), ColRed, font, new Vector2(540f, 76f));
+
+            GameObject spacer = new GameObject("Spacer");
+            spacer.transform.SetParent(content, false);
+            RectTransform spacerRt = spacer.AddComponent<RectTransform>();
+            spacerRt.sizeDelta = new Vector2(150f, 4f);
+
+            backBtn = CreateActionButton(content, "BackButton", "BACK", LoadFirstSprite(IconHomePath), ColGold, font, new Vector2(300f, 66f));
+
+            return panelRt;
         }
 
         private static RectTransform CreateWindowFrame(

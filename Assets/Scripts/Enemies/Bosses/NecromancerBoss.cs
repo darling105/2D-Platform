@@ -16,16 +16,20 @@ namespace Platformer2D.Enemies.Bosses
     public class NecromancerBoss : BaseBoss
     {
         [Header("Necromancer Magic")]
-        [SerializeField] private float _teleportCooldown = 4.5f;
+        [SerializeField] private float _teleportCooldown = 7.0f;
         private float _teleportTimer = 0f;
 
         protected override void Awake()
         {
             _bossDisplayName = "CHÚA TỂ CHIÊU HỒN (NECROMANCER)";
-            _maxHealth = 85;
-            _baseMoveSpeed = 2.2f;
-            _meleeRange = 3.2f;
-            _meleeDamage = 2;
+            _maxHealth = 40;
+            _baseMoveSpeed = 1.8f;
+            _meleeRange = 2.8f;
+            _meleeDamage = 1;
+            _attackCooldown = 2.8f;
+            _specialCooldown = 8.0f;
+            _enrageSpeedMultiplier = 1.15f;
+            _teleportCooldown = 7.0f;
             _spriteFacesLeftByDefault = true;
 
             base.Awake();
@@ -69,14 +73,14 @@ namespace Platformer2D.Enemies.Bosses
                 _animator.Play("Necromancer_Attack");
             }
 
-            yield return new WaitForSeconds(0.45f);
+            yield return new WaitForSeconds(0.55f);
 
-            // Bắn 3 viên đạn hình quạt
+            // Bắn 3 viên đạn hình quạt tốc độ vừa phải để dễ né
             float baseDirX = _isFacingRight ? 1f : -1f;
             for (int i = -1; i <= 1; i++)
             {
                 Vector3 spawnPos = transform.position + new Vector3(baseDirX * 1.2f, 0.5f + i * 0.4f, 0f);
-                SpawnMagicMissile(spawnPos, new Vector2(baseDirX * 8f, i * 2.2f));
+                SpawnMagicMissile(spawnPos, new Vector2(baseDirX * 6.0f, i * 1.8f));
             }
 
             EventBus.Publish(new PlaySoundEvent("Roar", SoundType.SFX, transform.position));
@@ -100,16 +104,16 @@ namespace Platformer2D.Enemies.Bosses
             EventBus.Publish(new HudToastMessageEvent("CẢNH BÁO: BÃO LỬA ĐỊA NGỤC (HELLFIRE RAIN)!", new Color(1f, 0.2f, 0.1f, 1f)));
             CameraFollow2D.TriggerShake(0.20f, 0.16f);
 
-            yield return new WaitForSeconds(0.5f);
+            yield return new WaitForSeconds(0.6f);
 
-            // Rơi 5 tảng lửa từ trên trời xuống khu vực quanh người chơi
+            // Rơi 3 tảng lửa từ trên trời xuống khu vực quanh người chơi
             float playerX = _playerTransform != null ? _playerTransform.position.x : transform.position.x;
-            for (int i = 0; i < 5; i++)
+            for (int i = 0; i < 3; i++)
             {
                 float dropX = playerX + UnityEngine.Random.Range(-4.5f, 4.5f);
                 Vector3 rainPos = new Vector3(dropX, transform.position.y + 6.5f, 0f);
                 SpawnFallingHellfire(rainPos);
-                yield return new WaitForSeconds(0.12f);
+                yield return new WaitForSeconds(0.18f);
             }
 
             yield return new WaitForSeconds(0.4f);
@@ -178,10 +182,10 @@ namespace Platformer2D.Enemies.Bosses
 
             Rigidbody2D fireRb = fire.AddComponent<Rigidbody2D>();
             fireRb.bodyType = RigidbodyType2D.Dynamic;
-            fireRb.gravityScale = 2.8f;
+            fireRb.gravityScale = 2.0f;
 
             var dealer = fire.AddComponent<DamageDealer>();
-            dealer.Initialize(2, Vector2.down, 4f, 4f, DamageType.Magical);
+            dealer.Initialize(1, Vector2.down, 4f, 4f, DamageType.Magical);
 
             Destroy(fire, 3.5f);
         }
